@@ -25,7 +25,6 @@ export default function SystemsPage() {
     setLoading(false);
   };
 
-  // Clean primary system categories for quick, uncluttered filtering
   const primarySystems = [
     'All',
     'Cardiovascular',
@@ -43,7 +42,6 @@ export default function SystemsPage() {
     'Psychiatry'
   ];
 
-  // Filter items where the system string contains the selected primary system (case-insensitive)
   const filtered = selectedSystem === 'All' 
     ? items 
     : items.filter(i => i.body_systems?.toLowerCase().includes(selectedSystem.toLowerCase()));
@@ -52,8 +50,9 @@ export default function SystemsPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
-            <ArrowLeft className="w-4 h-4" /> Back to Main
+          {/* UPDATED: Takes you back to Pharmacology */}
+          <Link href="/pharmacology" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
+            <ArrowLeft className="w-4 h-4" /> Back to Pharmacology
           </Link>
         </div>
 
@@ -64,7 +63,6 @@ export default function SystemsPage() {
           <p className="text-sm text-slate-500 mt-1">Browse all pharmacology and clinical entries categorized by organ system.</p>
         </div>
 
-        {/* Clean, Organized Primary System Filter Pills */}
         <div className="flex flex-wrap gap-2">
           {primarySystems.map((sys) => (
             <button
