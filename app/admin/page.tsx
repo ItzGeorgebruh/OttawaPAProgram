@@ -18,13 +18,13 @@ function AdminForm() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const [form, setForm] = useState({
-    section: defaultFolder,          // Updated from 'folder' to 'section'
-    didactic_term: 'Term 1',         // Updated from 'term' to 'didactic_term'
+    section: defaultFolder,
+    didactic_term: 'Term 1',
     pregnancy_safety: 'Not Specified',
     generic_name: '',
     brand_names: '',
     drug_class: '',
-    body_systems: 'Cardiovascular',
+    body_systems: 'Cardiology', // Default body system
     mechanism_of_action: '',
     indications: '',
     route: '',
@@ -108,6 +108,25 @@ function AdminForm() {
   const isClinical = form.section === 'Clinical Medicine';
   const cancelLink = isClinical ? '/clinical' : '/pharmacology';
 
+  // Standard medical body systems list for clean organization
+  const bodySystemOptions = [
+    'Cardiology',
+    'Pulmonology',
+    'Gastrointestinal',
+    'Neurology',
+    'Nephrology / Urology',
+    'Endocrinology',
+    'Musculoskeletal',
+    'Hematology / Immunology',
+    'Infectious Disease',
+    'Dermatology',
+    'HEENT',
+    'Obstetrics / Gynecology',
+    'Psychiatry',
+    'Integumentary',
+    'General'
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -177,7 +196,7 @@ function AdminForm() {
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                {isClinical ? 'Disease / Condition Name' : 'generic_name'}
+                {isClinical ? 'Disease / Condition Name' : 'Generic Name'}
               </label>
               <input
                 type="text"
@@ -204,39 +223,29 @@ function AdminForm() {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {!isClinical ? (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Body System</label>
+              <select
+                name="body_systems"
+                value={form.body_systems}
+                onChange={handleChange}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700 cursor-pointer"
+              >
+                {bodySystemOptions.map((sys) => (
+                  <option key={sys} value={sys}>{sys}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {!isClinical && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Drug Class</label>
                 <input
                   type="text"
                   name="drug_class"
                   value={form.drug_class}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Body System</label>
-                <input
-                  type="text"
-                  name="body_systems"
-                  value={form.body_systems}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            )}
-          </div>
-
-          {!isClinical && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Body System</label>
-                <input
-                  type="text"
-                  name="body_systems"
-                  value={form.body_systems}
                   onChange={handleChange}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
