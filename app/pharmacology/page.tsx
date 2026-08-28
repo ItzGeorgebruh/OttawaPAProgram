@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
-import { Plus, Search, ArrowLeft, Pill, ChevronRight, Filter } from 'lucide-react';
+import { Plus, Search, ArrowLeft, Pill, ChevronRight, Filter, Layers } from 'lucide-react';
 
 export default function PharmacologyPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -17,7 +17,6 @@ export default function PharmacologyPage() {
 
   const fetchDrugs = async () => {
     setLoading(true);
-    // FIXED: Changed 'folder' to 'section'
     const { data, error } = await supabase
       .from('drugs')
       .select('*')
@@ -33,12 +32,10 @@ export default function PharmacologyPage() {
       item.generic_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.brand_names?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // FIXED: Changed 'item.term' to 'item.didactic_term'
     const matchesTerm = selectedTerm === 'All' || item.didactic_term === selectedTerm;
     return matchesSearch && matchesTerm;
   });
 
-  // Helper to format text and colors cleanly
   const getPregnancyDisplay = (safetyText: string) => {
     const safety = (safetyText || '').toLowerCase();
     
@@ -74,9 +71,14 @@ export default function PharmacologyPage() {
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
             <ArrowLeft className="w-4 h-4" /> Back to Main
           </Link>
-          <Link href="/admin?folder=Pharmacology" className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
-            <Plus className="w-4 h-4" /> Add New Drug
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/systems" className="inline-flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition">
+              <Layers className="w-4 h-4 text-blue-600" /> View by Body Systems
+            </Link>
+            <Link href="/admin?folder=Pharmacology" className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+              <Plus className="w-4 h-4" /> Add New Drug
+            </Link>
+          </div>
         </div>
 
         <div>
