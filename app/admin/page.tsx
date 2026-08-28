@@ -4,9 +4,27 @@ import React, { useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Sparkles, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, AlertCircle, Check } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+const AVAILABLE_SYSTEMS = [
+  'Cardiovascular',
+  'Respiratory',
+  'Gastrointestinal',
+  'Neurology',
+  'Endocrine',
+  'Integumentary',
+  'Renal',
+  'Hematologic',
+  'Immunologic',
+  'Musculoskeletal',
+  'Reproductive',
+  'Dermatology',
+  'Psychiatry',
+  'Systemic',
+  'Immune'
+];
 
 function AdminForm() {
   const router = useRouter();
@@ -24,7 +42,7 @@ function AdminForm() {
     generic_name: '',
     brand_names: '',
     drug_class: '',
-    body_systems: 'Cardiology', // Default body system
+    body_systems: 'Cardiovascular',
     mechanism_of_action: '',
     indications: '',
     route: '',
@@ -41,6 +59,25 @@ function AdminForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Toggle multiple body systems cleanly
+  const toggleSystem = (sys: string) => {
+    const currentSystems = form.body_systems
+      ? form.body_systems.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+
+    let updatedSystems: string[];
+    if (currentSystems.includes(sys)) {
+      updatedSystems = currentSystems.filter(s => s !== sys);
+    } else {
+      updatedSystems = [...currentSystems, sys];
+    }
+
+    setForm({
+      ...form,
+      body_systems: updatedSystems.join(', ')
+    });
   };
 
   const handleAIFill = async () => {
@@ -107,25 +144,7 @@ function AdminForm() {
 
   const isClinical = form.section === 'Clinical Medicine';
   const cancelLink = isClinical ? '/clinical' : '/pharmacology';
-
-  // Standard medical body systems list for clean organization
-  const bodySystemOptions = [
-    'Cardiology',
-    'Pulmonology',
-    'Gastrointestinal',
-    'Neurology',
-    'Nephrology / Urology',
-    'Endocrinology',
-    'Musculoskeletal',
-    'Hematology / Immunology',
-    'Infectious Disease',
-    'Dermatology',
-    'HEENT',
-    'Obstetrics / Gynecology',
-    'Psychiatry',
-    'Integumentary',
-    'General'
-  ];
+  const selectedSystemsList = form.body_systems ? form.body_systems.split(',').map(s => s.trim()) : [];
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
@@ -223,23 +242,7 @@ function AdminForm() {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Body System</label>
-              <select
-                name="body_systems"
-                value={form.body_systems}
-                onChange={handleChange}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700 cursor-pointer"
-              >
-                {bodySystemOptions.map((sys) => (
-                  <option key={sys} value={sys}>{sys}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {!isClinical && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {!isClinical ? (
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Drug Class</label>
                 <input
@@ -250,13 +253,14 @@ function AdminForm() {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+            ) : (
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Pregnancy Safety</label>
                 <select
                   name="pregnancy_safety"
                   value={form.pregnancy_safety}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700 cursor-pointer"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="Safe">Safe</option>
                   <option value="Use with caution">Use with caution</option>
@@ -264,6 +268,58 @@ function AdminForm() {
                   <option value="Not Specified">Not Specified</option>
                 </select>
               </div>
+            )}
+          </div>
+
+          {/* MULTI-SYSTEM SELECTOR CHECKBOX GRID */}
+          <div className="space-y-2 pt-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+              Body Systems (Click to select multiple)
+            </label>
+            <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+              {AVAILABLE_SYSTEMS.map((sys) => {
+                const isSelected = selectedSystemsList.includes(sys);
+                return (
+                  <button
+                    key={sys}
+                    type="button"
+                    onClick={() => toggleSystem(sys)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {isSelected && <Check className="w-3 h-3" />}
+                    {sys}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="text"
+              name="body_systems"
+              value={form.body_systems}
+              onChange={handleChange}
+              placeholder="Or type custom comma-separated systems..."
+              className="w-full mt-2 px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
+          </div>
+
+          {!isClinical && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Pregnancy Safety</label>
+              <select
+                name="pregnancy_safety"
+                value={form.pregnancy_safety}
+                onChange={handleChange}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="Safe">Safe</option>
+                <option value="Use with caution">Use with caution</option>
+                <option value="Contraindicated">Contraindicated</option>
+                <option value="Not Specified">Not Specified</option>
+              </select>
             </div>
           )}
 
