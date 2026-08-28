@@ -28,10 +28,54 @@ export default function PharmacologyPage() {
   };
 
   const filtered = items.filter((item) => {
-    const matchesSearch =
-      item.generic_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.brand_names?.toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.toLowerCase().trim();
     
+    // Check standard search fields (name, brand, or class)
+    let matchesSearch =
+      item.generic_name?.toLowerCase().includes(query) ||
+      item.brand_names?.toLowerCase().includes(query) ||
+      item.drug_class?.toLowerCase().includes(query);
+
+    // Intelligent catch-all groupings for Antimicrobials
+    if (query === 'antibiotic' || query === 'antibiotics') {
+      const antibioticClasses = [
+        'penicillin', 'cephalosporin', 'macrolide', 'fluoroquinolone', 
+        'tetracycline', 'aminoglycoside', 'carbapenem', 'glycopeptide', 
+        'lincosamide', 'sulfonamide', 'oxazolidinone', 'nitroimidazole', 
+        'ansamycin', 'nrti', 'nnrti', 'protease inhibitor', 'antibiotic', 'anti-infective'
+      ];
+      
+      const classText = (item.drug_class || '').toLowerCase();
+      const mechanismText = (item.mechanism_of_action || '').toLowerCase();
+      
+      matchesSearch = antibioticClasses.some(keyword => 
+        classText.includes(keyword) || mechanismText.includes(keyword)
+      );
+    } else if (query === 'antiviral' || query === 'antivirals' || query === 'anti-viral' || query === 'anti-virals') {
+      const antiviralClasses = [
+        'antiviral', 'anti-viral', 'nrti', 'nnrti', 'protease inhibitor', 
+        'integrase', 'neuraminidase', ' polymerase inhibitor', 'nucleoside analog'
+      ];
+      
+      const classText = (item.drug_class || '').toLowerCase();
+      const mechanismText = (item.mechanism_of_action || '').toLowerCase();
+      
+      matchesSearch = antiviralClasses.some(keyword => 
+        classText.includes(keyword) || mechanismText.includes(keyword)
+      );
+    } else if (query === 'antifungal' || query === 'antifungals' || query === 'anti-fungal' || query === 'anti-fungals') {
+      const antifungalClasses = [
+        'antifungal', 'anti-fungal', 'azole', 'echinocandin', 'polyene', 'allylamine'
+      ];
+      
+      const classText = (item.drug_class || '').toLowerCase();
+      const mechanismText = (item.mechanism_of_action || '').toLowerCase();
+      
+      matchesSearch = antifungalClasses.some(keyword => 
+        classText.includes(keyword) || mechanismText.includes(keyword)
+      );
+    }
+
     const matchesTerm = selectedTerm === 'All' || item.didactic_term === selectedTerm;
     return matchesSearch && matchesTerm;
   });
@@ -117,7 +161,7 @@ export default function PharmacologyPage() {
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search drugs..."
+              placeholder="Search drugs or type 'antibiotics', 'antivirals', 'antifungals'..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
