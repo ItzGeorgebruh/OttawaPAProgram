@@ -82,12 +82,17 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  // Intelligent filter helper grouping ENT, otic, ocular, and related derivatives
+  // Intelligent filter helper ensuring Integumentary is strictly protected and excluded from ENT
   const matchesSystemFilter = (item: any, filter: string) => {
     const itemSystemText = (item.body_systems || '').toLowerCase();
     const target = filter.toLowerCase();
 
     if (target === 'all') return true;
+
+    // If looking specifically for Integumentary
+    if (target === 'integumentary') {
+      return itemSystemText.includes('integumentary');
+    }
 
     const tokens = itemSystemText.split(/,\s*|\s+/).map((t: string) => t.trim());
 
@@ -100,7 +105,11 @@ function SystemsContent() {
     }
 
     if (target === 'ent') {
-      // Catch explicit ENT, otic, ocular, ophthalmology, or special senses tags
+      // Never let Integumentary fall into ENT
+      if (itemSystemText.includes('integumentary')) {
+        return false;
+      }
+
       if (
         tokens.some((t: string) => 
           t.includes('ent') || 
@@ -114,7 +123,6 @@ function SystemsContent() {
         return true;
       }
       
-      // Catch broader ENT/eye/ear derivatives in name, class, or symptoms
       const combinedText = `${item.generic_name || ''} ${item.drug_class || ''} ${item.symptoms || ''} ${item.indications || ''}`.toLowerCase();
       const entKeywords = [
         'ear', 'nose', 'throat', 'otitis', 'sinusitis', 'pharyngitis', 
@@ -129,7 +137,7 @@ function SystemsContent() {
     return itemSystemText.includes(target);
   };
 
-  // Automatically map otic, ocular, and ENT derivatives to display uniformly as "ENT"
+  // Automatically map otic, ocular, and ENT tags while strictly preserving Integumentary
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
@@ -140,7 +148,10 @@ function SystemsContent() {
       const lower = tag.toLowerCase();
       if (lower === 'metabolic') return;
       
-      if (lower === 'gi' || lower === 'gastrointestinal') {
+      // Explicitly keep Integumentary as its own system
+      if (lower.includes('integumentary')) {
+        mappedTags.add('Integumentary');
+      } else if (lower === 'gi' || lower === 'gastrointestinal') {
         mappedTags.add('Gastrointestinal');
       } else if (lower === 'gu' || lower === 'genitourinary') {
         mappedTags.add('Genitourinary');

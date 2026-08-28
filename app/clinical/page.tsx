@@ -163,3 +163,39 @@ export default function ClinicalPage() {
     </div>
   );
 }
+
+// Automatically map otic, ocular, and ENT tags while strictly protecting Integumentary
+  const formatBodySystemDisplay = (text: string) => {
+    if (!text) return 'General';
+    
+    const tags = text.split(',').map((t: string) => t.trim());
+    const mappedTags = new Set<string>();
+
+    tags.forEach((tag: string) => {
+      const lower = tag.toLowerCase();
+      if (lower === 'metabolic') return;
+      
+      // Explicitly keep Integumentary as its own system
+      if (lower.includes('integumentary')) {
+        mappedTags.add('Integumentary');
+      } else if (lower === 'gi' || lower === 'gastrointestinal') {
+        mappedTags.add('Gastrointestinal');
+      } else if (lower === 'gu' || lower === 'genitourinary') {
+        mappedTags.add('Genitourinary');
+      } else if (
+        lower.includes('otic') || 
+        lower.includes('ocular') || 
+        lower.includes('ophthalm') || 
+        lower.includes('ent') || 
+        lower.includes('otolaryngology') ||
+        lower.includes('special senses')
+      ) {
+        mappedTags.add('ENT');
+      } else {
+        mappedTags.add(tag);
+      }
+    });
+
+    const result = Array.from(mappedTags);
+    return result.length > 0 ? result.join(', ') : 'General';
+  };
