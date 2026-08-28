@@ -52,7 +52,7 @@ function SystemsContent() {
     'Integumentary',
     'Renal',
     'Genitourinary',
-    'ENT', // Added here
+    'ENT',
     'Hematologic',
     'Immunologic',
     'Musculoskeletal',
@@ -82,46 +82,46 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  // Intelligent filter helper with catch-all keywords for ENT
+  // Safe token-boundary filter helper with explicit types
   const matchesSystemFilter = (item: any, filter: string) => {
     const itemSystemText = item.body_systems || '';
     const text = itemSystemText.toLowerCase();
     const target = filter.toLowerCase();
 
-    const tokens = text.split(/,\s*|\s+/).map(t => t.trim());
+    const tokens = text.split(/,\s*|\s+/).map((t: string) => t.trim());
 
     if (target === 'gastrointestinal') {
-      return tokens.includes('gi') || tokens.some(t => t.includes('gastrointestinal'));
+      return tokens.includes('gi') || tokens.some((t: string) => t.includes('gastrointestinal'));
     }
     
     if (target === 'genitourinary') {
-      return tokens.includes('gu') || tokens.some(t => t.includes('genitourinary'));
+      return tokens.includes('gu') || tokens.some((t: string) => t.includes('genitourinary'));
     }
 
     if (target === 'ent') {
-      if (tokens.includes('ent') || tokens.some(t => t.includes('otolaryngology'))) {
+      if (tokens.includes('ent') || tokens.some((t: string) => t.includes('otolaryngology'))) {
         return true;
       }
-      // Intelligent catch-all search through name, class, or symptoms for ENT pathology
       const combinedText = `${item.generic_name || ''} ${item.drug_class || ''} ${item.symptoms || ''} ${item.indications || ''}`.toLowerCase();
       const entKeywords = [
         'ear', 'nose', 'throat', 'otitis', 'sinusitis', 'pharyngitis', 
         'tonsillitis', 'rhinitis', 'laryngitis', 'tinnitus', 'vertigo', 
         'epistaxis', 'parotitis', 'mastoiditis', 'laryngotracheobronchitis'
       ];
-      return entKeywords.some(keyword => combinedText.includes(keyword));
+      return entKeywords.some((keyword: string) => combinedText.includes(keyword));
     }
 
-    return tokens.some(token => token.includes(target));
+    return tokens.some((token: string) => token.includes(target));
   };
 
+  // Cleans up tag display with explicit types
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
-    const tags = text.split(',').map(t => t.trim());
+    const tags = text.split(',').map((t: string) => t.trim());
     const mappedTags = new Set<string>();
 
-    tags.forEach(tag => {
+    tags.forEach((tag: string) => {
       const lower = tag.toLowerCase();
       if (lower === 'metabolic') return;
       
