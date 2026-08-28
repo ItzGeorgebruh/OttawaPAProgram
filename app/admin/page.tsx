@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { ArrowLeft, Save, Sparkles, AlertCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminPage() {
+function AdminForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultFolder = searchParams.get('folder') || 'Pharmacology';
@@ -336,5 +336,13 @@ export default function AdminPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading editor...</div>}>
+      <AdminForm />
+    </Suspense>
   );
 }
