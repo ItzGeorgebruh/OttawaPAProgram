@@ -12,7 +12,6 @@ function SystemsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Read initial system filter from URL, default to 'All'
   const initialSystem = searchParams.get('system') || 'All';
   
   const [items, setItems] = useState<any[]>([]);
@@ -23,7 +22,6 @@ function SystemsContent() {
     fetchItems();
   }, []);
 
-  // Update selected system if URL params change externally
   useEffect(() => {
     const sysParam = searchParams.get('system');
     if (sysParam) {
@@ -51,6 +49,7 @@ function SystemsContent() {
     'Endocrine',
     'Integumentary',
     'Renal',
+    'Genitourinary',
     'Hematologic',
     'Immunologic',
     'Musculoskeletal',
@@ -70,9 +69,29 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
+  // Intelligent filter helper to map shorthand (GI -> Gastrointestinal, GU -> Genitourinary)
+  const matchesSystemFilter = (itemSystemText: string, filter: string) => {
+    if (!itemSystemText) return false;
+    const text = itemSystemText.toLowerCase();
+    const target = filter.toLowerCase();
+
+    // Direct substring match (e.g. "Cardiovascular" matches "Cardiovascular, Endocrine")
+    if (text.includes(target)) return true;
+
+    // Shorthand mapping aliases
+    if (target === 'gastrointestinal' && (text.includes('gi') || text.match(/\bgi\b/))) {
+      return true;
+    }
+    if (target === 'genitourinary' && (text.includes('gu') || text.match(/\bgu\b/))) {
+      return true;
+    }
+
+    return false;
+  };
+
   const filtered = selectedSystem === 'All' 
     ? items 
-    : items.filter(i => i.body_systems?.toLowerCase().includes(selectedSystem.toLowerCase()));
+    : items.filter(i => matchesSystemFilter(i.body_systems, selectedSystem));
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
