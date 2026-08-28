@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
-import { Plus, Search, ArrowLeft, Stethoscope, ChevronRight, Filter } from 'lucide-react';
+import { Plus, Search, ArrowLeft, Stethoscope, ChevronRight, Filter, Layers } from 'lucide-react';
 
 export default function ClinicalPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -17,7 +17,6 @@ export default function ClinicalPage() {
 
   const fetchDiseases = async () => {
     setLoading(true);
-    // FIXED: Changed 'folder' to 'section'
     const { data, error } = await supabase
       .from('drugs')
       .select('*')
@@ -33,10 +32,33 @@ export default function ClinicalPage() {
       item.generic_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.brand_names?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // FIXED: Changed 'item.term' to 'item.didactic_term'
     const matchesTerm = selectedTerm === 'All' || item.didactic_term === selectedTerm;
     return matchesSearch && matchesTerm;
   });
+
+  // Clean up body system display to omit metabolic and standardize GI/GU
+  const formatBodySystemDisplay = (text: string) => {
+    if (!text) return 'General';
+    
+    const tags = text.split(',').map(t => t.trim());
+    const mappedTags = new Set<string>();
+
+    tags.forEach(tag => {
+      const lower = tag.toLowerCase();
+      if (lower === 'metabolic') return;
+      
+      if (lower === 'gi' || lower === 'gastrointestinal') {
+        mappedTags.add('Gastrointestinal');
+      } else if (lower === 'gu' || lower === 'genitourinary') {
+        mappedTags.add('Genitourinary');
+      } else {
+        mappedTags.add(tag);
+      }
+    });
+
+    const result = Array.from(mappedTags);
+    return result.length > 0 ? result.join(', ') : 'General';
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
@@ -45,9 +67,14 @@ export default function ClinicalPage() {
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
             <ArrowLeft className="w-4 h-4" /> Back to Main
           </Link>
-          <Link href="/admin?folder=Clinical Medicine" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition shadow-sm">
-            <Plus className="w-4 h-4" /> Add New Disease
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/systems?section=Clinical%20Medicine" className="inline-flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition">
+              <Layers className="w-4 h-4 text-emerald-600" /> View by Body Systems
+            </Link>
+            <Link href="/admin?folder=Clinical%20Medicine" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition shadow-sm">
+              <Plus className="w-4 h-4" /> Add New Disease
+            </Link>
+          </div>
         </div>
 
         <div>
@@ -97,20 +124,23 @@ export default function ClinicalPage() {
             {filtered.map((item) => (
               <Link 
                 key={item.id} 
-                href={`/view/${item.id}`} 
+                href={`/view/${item.id}?from=systems&section=Clinical%20Medicine`} 
                 className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition flex items-center justify-between group cursor-pointer"
               >
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition">
-                      {item.generic_name}
-                    </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-semibold border border-emerald-100">
+                      {formatBodySystemDisplay(item.body_systems)}
+                    </span>
                     {item.didactic_term && (
                       <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-semibold border border-indigo-100">
                         {item.didactic_term}
                       </span>
                     )}
                   </div>
+                  <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition">
+                    {item.generic_name}
+                  </h3>
                   <p className="text-xs text-slate-500">
                     Subtype: {item.brand_names || 'General'}
                   </p>
