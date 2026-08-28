@@ -1,12 +1,32 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Sparkles, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, AlertCircle, Check } from 'lucide-react';
 
-export default function EditMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+export const dynamic = 'force-dynamic';
+
+const AVAILABLE_SYSTEMS = [
+  'Cardiovascular',
+  'Respiratory',
+  'Gastrointestinal',
+  'Neurology',
+  'Endocrine',
+  'Integumentary',
+  'Renal',
+  'Hematologic',
+  'Immunologic',
+  'Musculoskeletal',
+  'Reproductive',
+  'Dermatology',
+  'Psychiatry',
+  'Systemic',
+  'Immune'
+];
+
+function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams?.id;
   const router = useRouter();
@@ -17,8 +37,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
   const [errorMsg, setErrorMsg] = useState('');
 
   const [form, setForm] = useState({
-    section: 'Pharmacology',          // Updated from 'folder' to 'section'
-    didactic_term: 'Term 1',          // Updated from 'term' to 'didactic_term'
+    section: 'Pharmacology',
+    didactic_term: 'Term 1',
     pregnancy_safety: 'Not Specified',
     generic_name: '',
     brand_names: '',
@@ -45,7 +65,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
   const fetchRecord = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('drugs')                 // FIXED: Changed from 'medications' to 'drugs'
+      .from('drugs')
       .select('*')
       .eq('id', id)
       .single();
@@ -55,8 +75,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
       setErrorMsg('Failed to load record.');
     } else if (data) {
       setForm({
-        section: data.section || 'Pharmacology',               // FIXED
-        didactic_term: data.didactic_term || 'Term 1',         // FIXED
+        section: data.section || 'Pharmacology',
+        didactic_term: data.didactic_term || 'Term 1',
         pregnancy_safety: data.pregnancy_safety || 'Not Specified',
         generic_name: data.generic_name || '',
         brand_names: data.brand_names || '',
@@ -81,6 +101,25 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Toggle multiple body systems cleanly
+  const toggleSystem = (sys: string) => {
+    const currentSystems = form.body_systems
+      ? form.body_systems.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+
+    let updatedSystems: string[];
+    if (currentSystems.includes(sys)) {
+      updatedSystems = currentSystems.filter(s => s !== sys);
+    } else {
+      updatedSystems = [...currentSystems, sys];
+    }
+
+    setForm({
+      ...form,
+      body_systems: updatedSystems.join(', ')
+    });
   };
 
   const handleAIFill = async () => {
@@ -133,7 +172,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
     setErrorMsg('');
 
     const { error } = await supabase
-      .from('drugs')                 // FIXED: Changed from 'medications' to 'drugs'
+      .from('drugs')
       .update(form)
       .eq('id', id);
 
@@ -154,6 +193,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
 
   const isClinical = form.section === 'Clinical Medicine';
   const cancelLink = isClinical ? '/clinical' : '/pharmacology';
+  const selectedSystemsList = form.body_systems ? form.body_systems.split(',').map(s => s.trim()) : [];
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
@@ -224,7 +264,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                {isClinical ? 'Disease / Condition Name' : 'generic_name'}
+                {isClinical ? 'Disease / Condition Name' : 'Generic Name'}
               </label>
               <input
                 type="text"
@@ -263,31 +303,6 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
               </div>
             ) : (
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Body System</label>
-                <input
-                  type="text"
-                  name="body_systems"
-                  value={form.body_systems}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            )}
-          </div>
-
-          {!isClinical && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Body System</label>
-                <input
-                  type="text"
-                  name="body_systems"
-                  value={form.body_systems}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Pregnancy Safety</label>
                 <select
                   name="pregnancy_safety"
@@ -301,6 +316,59 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
                   <option value="Not Specified">Not Specified</option>
                 </select>
               </div>
+            )}
+          </div>
+
+          {/* MULTI-SYSTEM SELECTOR CHECKBOX GRID */}
+          <div className="space-y-2 pt-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+              Body Systems (Click to select multiple)
+            </label>
+            <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+              {AVAILABLE_SYSTEMS.map((sys) => {
+                const isSelected = selectedSystemsList.includes(sys);
+                return (
+                  <button
+                    key={sys}
+                    type="button"
+                    onClick={() => toggleSystem(sys)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {isSelected && <Check className="w-3 h-3" />}
+                    {sys}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Manual fallback input in case a custom system name is needed */}
+            <input
+              type="text"
+              name="body_systems"
+              value={form.body_systems}
+              onChange={handleChange}
+              placeholder="Or type custom comma-separated systems..."
+              className="w-full mt-2 px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
+          </div>
+
+          {!isClinical && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Pregnancy Safety</label>
+              <select
+                name="pregnancy_safety"
+                value={form.pregnancy_safety}
+                onChange={handleChange}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="Safe">Safe</option>
+                <option value="Use with caution">Use with caution</option>
+                <option value="Contraindicated">Contraindicated</option>
+                <option value="Not Specified">Not Specified</option>
+              </select>
             </div>
           )}
 
@@ -384,5 +452,13 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
         </form>
       </div>
     </div>
+  );
+}
+
+export default function EditMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading editor...</div>}>
+      <EditMedicationContent params={params} />
+    </Suspense>
   );
 }
