@@ -82,13 +82,14 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  // Safe token-boundary filter helper with explicit types
+  // Intelligent filter helper grouping ENT, otic, ocular, and related derivatives
   const matchesSystemFilter = (item: any, filter: string) => {
-    const itemSystemText = item.body_systems || '';
-    const text = itemSystemText.toLowerCase();
+    const itemSystemText = (item.body_systems || '').toLowerCase();
     const target = filter.toLowerCase();
 
-    const tokens = text.split(/,\s*|\s+/).map((t: string) => t.trim());
+    if (target === 'all') return true;
+
+    const tokens = itemSystemText.split(/,\s*|\s+/).map((t: string) => t.trim());
 
     if (target === 'gastrointestinal') {
       return tokens.includes('gi') || tokens.some((t: string) => t.includes('gastrointestinal'));
@@ -99,22 +100,36 @@ function SystemsContent() {
     }
 
     if (target === 'ent') {
-      if (tokens.includes('ent') || tokens.some((t: string) => t.includes('otolaryngology'))) {
+      // Catch explicit ENT, otic, ocular, ophthalmology, or special senses tags
+      if (
+        tokens.some((t: string) => 
+          t.includes('ent') || 
+          t.includes('otic') || 
+          t.includes('ocular') || 
+          t.includes('ophthalm') || 
+          t.includes('otolaryngology') ||
+          t.includes('special senses')
+        )
+      ) {
         return true;
       }
+      
+      // Catch broader ENT/eye/ear derivatives in name, class, or symptoms
       const combinedText = `${item.generic_name || ''} ${item.drug_class || ''} ${item.symptoms || ''} ${item.indications || ''}`.toLowerCase();
       const entKeywords = [
         'ear', 'nose', 'throat', 'otitis', 'sinusitis', 'pharyngitis', 
         'tonsillitis', 'rhinitis', 'laryngitis', 'tinnitus', 'vertigo', 
-        'epistaxis', 'parotitis', 'mastoiditis', 'laryngotracheobronchitis'
+        'epistaxis', 'parotitis', 'mastoiditis', 'laryngotracheobronchitis',
+        'eye', 'vision', 'glaucoma', 'uveitis', 'amblyopia', 'cataract',
+        'conjunctivitis', 'retinopathy', 'macular', 'strabismus'
       ];
       return entKeywords.some((keyword: string) => combinedText.includes(keyword));
     }
 
-    return tokens.some((token: string) => token.includes(target));
+    return itemSystemText.includes(target);
   };
 
-  // Cleans up tag display with explicit types
+  // Automatically map otic, ocular, and ENT derivatives to display uniformly as "ENT"
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
@@ -129,6 +144,15 @@ function SystemsContent() {
         mappedTags.add('Gastrointestinal');
       } else if (lower === 'gu' || lower === 'genitourinary') {
         mappedTags.add('Genitourinary');
+      } else if (
+        lower.includes('otic') || 
+        lower.includes('ocular') || 
+        lower.includes('ophthalm') || 
+        lower.includes('ent') || 
+        lower.includes('otolaryngology') ||
+        lower.includes('special senses')
+      ) {
+        mappedTags.add('ENT');
       } else {
         mappedTags.add(tag);
       }
