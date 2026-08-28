@@ -35,6 +35,36 @@ export default function PharmacologyPage() {
     return matchesSearch && matchesTerm;
   });
 
+  // Helper to format text and colors cleanly
+  const getPregnancyDisplay = (safetyText: string) => {
+    const safety = (safetyText || '').toLowerCase();
+    
+    if (safety.includes('safe') || safety.includes('good') || safety.includes('category a') || safety.includes('category b')) {
+      return {
+        label: 'Safe',
+        style: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      };
+    } 
+    if (safety.includes('unsafe') || safety.includes('contraindicated') || safety.includes('category x')) {
+      return {
+        label: 'Not safe',
+        style: 'bg-rose-50 text-rose-700 border-rose-200'
+      };
+    } 
+    if (safety.includes('caution') || safety.includes('category c') || safety.includes('category d') || safety.includes('monitor')) {
+      return {
+        label: 'Use with caution',
+        style: 'bg-amber-50 text-amber-700 border-amber-200'
+      };
+    }
+    
+    // Fallback if blank or unrecognized
+    return {
+      label: safetyText || 'Not Specified',
+      style: 'bg-slate-100 text-slate-600 border-slate-200'
+    };
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -91,18 +121,7 @@ export default function PharmacologyPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filtered.map((item) => {
-              const safety = (item.pregnancy_safety || '').toLowerCase();
-              
-              // Determine badge colors based on text content
-              let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200'; // Default neutral
-              
-              if (safety.includes('safe') || safety.includes('good') || safety.includes('category a') || safety.includes('category b')) {
-                badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200'; // Green
-              } else if (safety.includes('unsafe') || safety.includes('contraindicated') || safety.includes('category x')) {
-                badgeStyle = 'bg-rose-50 text-rose-700 border-rose-200'; // Red
-              } else if (safety.includes('caution') || safety.includes('category c') || safety.includes('category d') || safety.includes('monitor')) {
-                badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200'; // Yellow/Amber
-              }
+              const pregnancyDisplay = getPregnancyDisplay(item.pregnancy_safety);
 
               return (
                 <Link 
@@ -141,9 +160,9 @@ export default function PharmacologyPage() {
                       {item.drug_class || 'Unclassified'}
                     </span>
                     
-                    {/* Color-Coded Pregnancy Safety Badge */}
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${badgeStyle}`}>
-                      {item.pregnancy_safety || 'Pregnancy: N/A'}
+                    {/* Clean Replaced Pregnancy Badge */}
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${pregnancyDisplay.style}`}>
+                      {pregnancyDisplay.label}
                     </span>
                   </div>
                 </Link>
