@@ -69,24 +69,49 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  // Intelligent filter helper to map shorthand (GI -> Gastrointestinal, GU -> Genitourinary)
+  // Safe token-boundary filter helper (prevents 'gu' from matching inside 'integumentary')
   const matchesSystemFilter = (itemSystemText: string, filter: string) => {
     if (!itemSystemText) return false;
     const text = itemSystemText.toLowerCase();
     const target = filter.toLowerCase();
 
-    // Direct substring match (e.g. "Cardiovascular" matches "Cardiovascular, Endocrine")
-    if (text.includes(target)) return true;
+    // Split text into distinct comma or space separated tokens/words
+    const tokens = text.split(/,\s*|\s+/).map(t => t.trim());
 
-    // Shorthand mapping aliases
-    if (target === 'gastrointestinal' && (text.includes('gi') || text.match(/\bgi\b/))) {
-      return true;
+    if (target === 'gastrointestinal') {
+      return tokens.includes('gi') || tokens.some(t => t.includes('gastrointestinal'));
     }
-    if (target === 'genitourinary' && (text.includes('gu') || text.match(/\bgu\b/))) {
-      return true;
+    
+    if (target === 'genitourinary') {
+      return tokens.includes('gu') || tokens.some(t => t.includes('genitourinary'));
     }
 
-    return false;
+    // Default match for standard system names
+    return tokens.some(token => token.includes(target));
+  };
+
+  // Cleans up tag display to omit metabolic and map GI/Gastrointestinal uniformly
+  const formatBodySystemDisplay = (text: string) => {
+    if (!text) return 'General';
+    
+    const tags = text.split(',').map(t => t.trim());
+    const mappedTags = new Set<string>();
+
+    tags.forEach(tag => {
+      const lower = tag.toLowerCase();
+      // Drop metabolic entirely
+      if (lower === 'metabolic') return;
+      
+      // Map 'gi' or 'gastrointestinal' to 'Gastrointestinal'
+      if (lower === 'gi' || lower === 'gastrointestinal') {
+        mappedTags.add('Gastrointestinal');
+      } else {
+        mappedTags.add(tag);
+      }
+    });
+
+    const result = Array.from(mappedTags);
+    return result.length > 0 ? result.join(', ') : 'General';
   };
 
   const filtered = selectedSystem === 'All' 
@@ -145,7 +170,7 @@ function SystemsContent() {
                       {item.section || 'General'}
                     </span>
                     <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-semibold border border-blue-100">
-                      {item.body_systems || 'General'}
+                      {formatBodySystemDisplay(item.body_systems)}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition">

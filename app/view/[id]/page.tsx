@@ -37,6 +37,30 @@ const getPregnancyDisplay = (safetyText: string) => {
   };
 };
 
+// Clean up body system display to omit metabolic and standardize GI/GU
+const formatBodySystemDisplay = (text: string) => {
+  if (!text) return 'General';
+  
+  const tags = text.split(',').map(t => t.trim());
+  const mappedTags = new Set<string>();
+
+  tags.forEach(tag => {
+    const lower = tag.toLowerCase();
+    if (lower === 'metabolic') return;
+    
+    if (lower === 'gi' || lower === 'gastrointestinal') {
+      mappedTags.add('Gastrointestinal');
+    } else if (lower === 'gu' || lower === 'genitourinary') {
+      mappedTags.add('Genitourinary');
+    } else {
+      mappedTags.add(tag);
+    }
+  });
+
+  const result = Array.from(mappedTags);
+  return result.length > 0 ? result.join(', ') : 'General';
+};
+
 function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams?.id;
@@ -213,7 +237,7 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
           <div className="flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-2">
               <span className="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-lg font-semibold uppercase tracking-wider">
-                {record.section} &bull; {record.body_systems || 'General'}
+                {record.section} &bull; {formatBodySystemDisplay(record.body_systems)}
               </span>
               {record.didactic_term && (
                 <span className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg font-semibold border border-indigo-100">
