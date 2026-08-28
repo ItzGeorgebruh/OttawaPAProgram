@@ -92,15 +92,15 @@ function AdminForm() {
     setSaving(true);
     setErrorMsg('');
 
-    // Updated from 'medications' to 'drugs' to match your database table
-    const { data, error } = await supabase.from('drugs').insert([form]).select();
+    const { error } = await supabase.from('drugs').insert([form]);
 
     if (error) {
       console.error('Error saving record:', error);
       setErrorMsg(error.message);
       setSaving(false);
-    } else if (data && data[0]) {
-      router.push(`/view/${data[0].id}`);
+    } else {
+      const redirectPath = form.folder === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
+      router.push(redirectPath);
       router.refresh();
     }
   };
