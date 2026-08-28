@@ -64,9 +64,9 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
   const fetchAllDrugs = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from('medications')
-      .select('id, generic_name, drug_class, folder')
-      .eq('folder', 'Pharmacology');
+      .from('drugs')
+      .select('id, generic_name, drug_class, section')
+      .eq('section', 'Pharmacology');
 
     if (data) setAllDrugs(data);
     setLoading(false);
@@ -76,7 +76,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
     if (window.confirm('Are you sure you want to delete this entry?')) {
       const { error } = await supabase.from('drugs').delete().eq('id', id);
       if (!error) {
-        router.push(record?.folder === 'Clinical Medicine' ? '/clinical' : '/pharmacology');
+        router.push(record?.section === 'Clinical Medicine' ? '/clinical' : '/pharmacology');
         router.refresh();
       }
     }
@@ -172,7 +172,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Record not found.</div>;
   }
 
-  const isClinical = record.folder === 'Clinical Medicine';
+  const isClinical = record.section === 'Clinical Medicine'; // FIXED
   const backLink = isClinical ? '/clinical' : '/pharmacology';
   const pregnancyDisplay = getPregnancyDisplay(record.pregnancy_safety);
 
@@ -199,17 +199,18 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
           <div className="flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-2">
               <span className="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-lg font-semibold uppercase tracking-wider">
-                {record.folder} &bull; {record.body_systems || 'General'}
+                {record.section} &bull; {record.body_systems || 'General'}
               </span>
-              {record.term && (
+              {record.didactic_term && (
                 <span className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg font-semibold border border-indigo-100">
-                  {record.term}
+                  {record.didactic_term}
                 </span>
               )}
             </div>
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
               {record.drug_class || 'Unclassified'}
             </span>
+
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{record.generic_name}</h1>
           {record.brand_names && (
@@ -221,7 +222,6 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
         {!isClinical ? (
           <div className="space-y-4">
-            {/* Clean Pregnancy Safety Card (No raw text strings) */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Pregnancy Safety Status</h3>
