@@ -6,6 +6,35 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
 
+// Helper to format text and colors cleanly for pregnancy safety
+const getPregnancyDisplay = (safetyText: string) => {
+  const safety = (safetyText || '').toLowerCase();
+  
+  if (safety.includes('safe') || safety.includes('good') || safety.includes('category a') || safety.includes('category b')) {
+    return {
+      label: 'Safe',
+      style: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    };
+  } 
+  if (safety.includes('unsafe') || safety.includes('contraindicated') || safety.includes('category x')) {
+    return {
+      label: 'Not safe',
+      style: 'bg-rose-50 text-rose-700 border-rose-200'
+    };
+  } 
+  if (safety.includes('caution') || safety.includes('category c') || safety.includes('category d') || safety.includes('monitor')) {
+    return {
+      label: 'Use with caution',
+      style: 'bg-amber-50 text-amber-700 border-amber-200'
+    };
+  }
+  
+  return {
+    label: safetyText || 'Not Specified',
+    style: 'bg-slate-100 text-slate-600 border-slate-200'
+  };
+};
+
 export default function ViewMedicationPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams?.id;
@@ -151,6 +180,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
   const isClinical = record.folder === 'Clinical Medicine';
   const backLink = isClinical ? '/clinical' : '/pharmacology';
+  const pregnancyDisplay = getPregnancyDisplay(record.pregnancy_safety);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
@@ -186,6 +216,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
               {record.drug_class || 'Unclassified'}
             </span>
+
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{record.generic_name}</h1>
           {record.brand_names && (
@@ -202,13 +233,8 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Pregnancy Safety Status</h3>
                 <p className="text-sm font-semibold text-slate-800 mt-0.5">{record.pregnancy_safety || 'Not specified'}</p>
               </div>
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border ${
-                record.pregnancy_safety?.includes('Safe') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                record.pregnancy_safety?.includes('Contraindicated') || record.pregnancy_safety?.includes('Unsafe') ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                record.pregnancy_safety?.includes('Caution') ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                'bg-slate-100 text-slate-600 border-slate-200'
-              }`}>
-                {record.pregnancy_safety || 'N/A'}
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border ${pregnancyDisplay.style}`}>
+                {pregnancyDisplay.label}
               </span>
             </div>
 
