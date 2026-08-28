@@ -64,6 +64,30 @@ export default function PharmacologyPage() {
     };
   };
 
+  // Clean up body system display to omit metabolic and standardize GI/GU
+  const formatBodySystemDisplay = (text: string) => {
+    if (!text) return 'General';
+    
+    const tags = text.split(',').map(t => t.trim());
+    const mappedTags = new Set<string>();
+
+    tags.forEach(tag => {
+      const lower = tag.toLowerCase();
+      if (lower === 'metabolic') return;
+      
+      if (lower === 'gi' || lower === 'gastrointestinal') {
+        mappedTags.add('Gastrointestinal');
+      } else if (lower === 'gu' || lower === 'genitourinary') {
+        mappedTags.add('Genitourinary');
+      } else {
+        mappedTags.add(tag);
+      }
+    });
+
+    const result = Array.from(mappedTags);
+    return result.length > 0 ? result.join(', ') : 'General';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -138,7 +162,7 @@ export default function PharmacologyPage() {
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-semibold">
-                          {item.body_systems || 'General'}
+                          {formatBodySystemDisplay(item.body_systems)}
                         </span>
                         {item.didactic_term && (
                           <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg font-semibold border border-indigo-100">
