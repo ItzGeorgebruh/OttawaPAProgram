@@ -18,7 +18,7 @@ export default function PharmacologyPage() {
   const fetchDrugs = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('medications')
+      .from('drugs')
       .select('*')
       .eq('folder', 'Pharmacology')
       .order('generic_name', { ascending: true });
