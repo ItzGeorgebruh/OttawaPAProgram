@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 // Helper to format text and colors cleanly for pregnancy safety
 const getPregnancyDisplay = (safetyText: string) => {
@@ -35,10 +37,14 @@ const getPregnancyDisplay = (safetyText: string) => {
   };
 };
 
-export default function ViewMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams?.id;
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const fromParam = searchParams.get('from');
+  const systemParam = searchParams.get('system');
 
   const [record, setRecord] = useState<any>(null);
   const [allDrugs, setAllDrugs] = useState<any[]>([]);
@@ -172,8 +178,16 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Record not found.</div>;
   }
 
-  const isClinical = record.section === 'Clinical Medicine'; // FIXED
-  const backLink = isClinical ? '/clinical' : '/pharmacology';
+  const isClinical = record.section === 'Clinical Medicine';
+  
+  // Determine dynamic back link preserving system filter if coming from systems view
+  let backLink = isClinical ? '/clinical' : '/pharmacology';
+  let backText = isClinical ? 'Back to Clinical' : 'Back to Pharmacology';
+  if (fromParam === 'systems') {
+    backLink = systemParam ? `/systems?system=${encodeURIComponent(systemParam)}` : '/systems';
+    backText = systemParam ? `Back to ${systemParam}` : 'Back to Systems';
+  }
+
   const pregnancyDisplay = getPregnancyDisplay(record.pregnancy_safety);
 
   return (
@@ -182,7 +196,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
         
         <div className="flex items-center justify-between">
           <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
-            <ArrowLeft className="w-4 h-4" /> Back to List
+            <ArrowLeft className="w-4 h-4" /> {backText}
           </Link>
 
           <div className="flex items-center gap-2">
@@ -296,5 +310,13 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
       </div>
     </div>
+  );
+}
+
+export default function ViewMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading record details...</div>}>
+      <ViewMedicationContent params={params} />
+    </Suspense>
   );
 }

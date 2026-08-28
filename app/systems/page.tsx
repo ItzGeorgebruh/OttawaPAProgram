@@ -1,25 +1,42 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Layers, ChevronRight } from 'lucide-react';
 
-export default function SystemsPage() {
+export const dynamic = 'force-dynamic';
+
+function SystemsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Read initial system filter from URL, default to 'All'
+  const initialSystem = searchParams.get('system') || 'All';
+  
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSystem, setSelectedSystem] = useState('All');
+  const [selectedSystem, setSelectedSystem] = useState(initialSystem);
 
   useEffect(() => {
     fetchItems();
   }, []);
+
+  // Update selected system if URL params change externally
+  useEffect(() => {
+    const sysParam = searchParams.get('system');
+    if (sysParam) {
+      setSelectedSystem(sysParam);
+    }
+  }, [searchParams]);
 
   const fetchItems = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('drugs')
       .select('*')
-      .order('body_systems', { ascending: true });
+      .order('generic_name', { ascending: true });
 
     if (!error) setItems(data || []);
     setLoading(false);
@@ -42,6 +59,17 @@ export default function SystemsPage() {
     'Psychiatry'
   ];
 
+  const handleSelectSystem = (sys: string) => {
+    setSelectedSystem(sys);
+    const params = new URLSearchParams(searchParams.toString());
+    if (sys === 'All') {
+      params.delete('system');
+    } else {
+      params.set('system', sys);
+    }
+    router.replace(`/systems?${params.toString()}`, { scroll: false });
+  };
+
   const filtered = selectedSystem === 'All' 
     ? items 
     : items.filter(i => i.body_systems?.toLowerCase().includes(selectedSystem.toLowerCase()));
@@ -50,7 +78,6 @@ export default function SystemsPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          {/* UPDATED: Takes you back to Pharmacology */}
           <Link href="/pharmacology" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
             <ArrowLeft className="w-4 h-4" /> Back to Pharmacology
           </Link>
@@ -67,7 +94,7 @@ export default function SystemsPage() {
           {primarySystems.map((sys) => (
             <button
               key={sys}
-              onClick={() => setSelectedSystem(sys)}
+              onClick={() => handleSelectSystem(sys)}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
                 selectedSystem === sys
                   ? 'bg-blue-600 text-white shadow-blue-200'
@@ -90,7 +117,7 @@ export default function SystemsPage() {
             {filtered.map((item) => (
               <Link 
                 key={item.id} 
-                href={`/view/${item.id}`} 
+                href={`/view/${item.id}?from=systems&system=${encodeURIComponent(selectedSystem)}`} 
                 className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition flex items-center justify-between group cursor-pointer"
               >
                 <div className="space-y-1">
@@ -116,5 +143,13 @@ export default function SystemsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SystemsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading systems view...</div>}>
+      <SystemsContent />
+    </Suspense>
   );
 }
