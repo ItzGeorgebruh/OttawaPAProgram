@@ -1,0 +1,468 @@
+Gentamicin
+Tobramycin
+Neomycin
+Penicillin VK
+Penicillin G
+Amoxicillin
+Ampiclillin
+Dicoxacillin
+Nafcillin
+Augmentin (Amoxicillin-Clavulanate)
+Piperacilin-Tazobactam
+Cephalexin
+Cefazolin
+Cefuroxime
+Cefaclor
+Cefoxtin/Cefotetan
+"Ceftriaxone
+Ceftazidime
+Cefdinir
+Cefotaxime
+Cefepime
+Ceftaroline
+Aztreonam
+Imipenem
+Meropenem
+TMP-SMX
+Vancomycin
+Ciprofloxacin
+Levofloxacin
+Ofloxacin
+Metronidazole
+Polymyxin B
+Tretinoin
+Adapalene
+Tazartene
+Isotretinoin
+Metrondiazole
+Chloroquine
+Mefloquine
+Primaquine
+Isoniazid (INH)
+Rifampin
+Ethambutol
+Albendazole
+Mebendazole
+Ivernmectin
+Permethrin
+Malathoin
+Spinosad
+Amphotericin B
+Nystatin
+Fluconazole
+Itraconazole
+Clotrimazole
+Miconazole
+Ketoconazole
+Terbinafine
+Naftifine
+Butenafine
+Griseofulvin
+Acyclovir
+Peniclovir
+Valacyclovir
+Famciclovir
+Docosanol
+Amatadine
+Rimantadine
+Osetlamivir
+Zanamivir
+Ganciclovir
+Valganciclovir
+Ribavirin
+Bimatoprost
+Latanoprost
+Travoprost
+Tacrolimus
+Pimecrolimus
+Cyclosporine
+Methotrexate
+Fluticasone
+Mometasone
+Budesonide
+Triamcinolone
+Diphenhydramine
+Hydroxyzine
+Cetirizine
+Loratadine
+Fexofenadine
+Hydrocortisone
+Predinisone/Prednisolone
+Methylprednisolone
+Dexamethasone
+Fludrocortisone
+Dehydroepiandrosterone
+Vasopressin
+Desmopressin
+Oxytocin
+Human Growth Hormone
+Octreotide
+Levothyroxine
+Liothyronine
+Liotrix
+Methimazole
+Propylthiouracil
+Iodide
+Radioactive Iodine (I-131)
+Cinacalcet
+Calcitriol
+Lipro
+Aspart
+Gulisine
+Regular Insulin
+NPH
+Glargine
+Detemir
+Deglucedc
+Metformin
+Glyburide
+Glipizide
+Glimepiride
+Repaglinide
+Nateglinide
+Pioglitazone
+Rosiglitazone
+Acarbose
+Miglitol
+Pramlintide
+Semaglutide
+Liragultide
+Dulaglutide
+Sitaagliptin
+Saxagliptin
+Lingagliptin
+Empagliflozin
+Dapagliflozin
+Canagliflozin
+Fluticasone
+Mometasone
+Budesonide
+Triamcinolone
+Oxymetazoline
+Phenylephrine
+Pseudoephedrine
+Ofloxacin
+Ciprofloxacin
+Benzocaine-Containing Otic Drops
+Erthromycin
+Trimethoprim-Polymyxin B
+Moxifloxacin
+Tropicamide
+Atropine
+Lantanoprost
+Bimatoprost
+Travoprost
+Timolol
+Betaxolol
+Brimonidine
+Dorzolamide
+Proparacaine
+Tetracaine
+Olopatadine
+Ketotifen
+Azelastine
+Carboxymethylcellulose
+Hypromellose
+Polyethylene Glycol/Propylene Glycol
+Atorvastatin
+Rosuvastatin
+Simvastatin
+Ezetimibe
+Cholestyramine
+Colesevelam
+Gemfibrozil
+Fenofibrate
+Niacin
+Omega-3 Fatty Acids
+Alirocumab
+Evolocumab
+Lisinopril
+Enalapril
+Captopril
+Losartan
+Valsartan
+Candesartan
+Amlodipine
+Nifedipine
+Nicardipine
+Verapamil
+Diltiazem
+Hydrochlorothiazide
+Chlorthalidone
+Furosemide
+Bumetanide
+Spironolactone
+Eplerenone
+Amiloride
+Metoprolol
+Atenolol
+Bisoprolol
+Propranolol
+Labetalol
+Carvedilol
+Prazosin
+Doxazosin
+Hydralazine
+Minoxidil
+Nitroglycerin
+Isosorbide Dinitrate
+Dopamine
+Dobutamine
+Phenylephrine
+Norepinephrine
+Epinephrine
+Isoproterenol
+Vasopressin
+Digoxin
+Budesonide
+Fluticasone
+Beclomethasone
+Mometasone
+Prednisone
+Prednisolone
+Methylprednisolone
+Montelukast
+Zafirlukast
+Zileuton
+Omalizumab
+Mepolizumab
+Reslizumab
+Benralizumab
+Dupilumab
+Albuterol
+Levalbuterol
+Salmetrol
+Formoterol
+Olodaterol
+Indacaterol
+Ipratropium
+Tiotropium
+Umeclidinium
+Aclidinium
+Glycopryrrolate
+Revefenacin
+Theophylline
+N-Acteylcysteine
+Dornase alfa
+Dextromethorphan
+Benzonatate
+Codeine
+Epoprostenol
+Treprostinil
+Iloprost
+Bosentan
+Ambrisentan
+Macitentan
+Sildenafil
+Tadalafil
+Antacids
+Famotidine
+Cimetidine
+Omeprazole
+Esomeprazole
+Pantoprazole
+Lansoprazole
+Sucralfate
+Misoprostol
+Pepto-Bismo
+Ondansetron
+Granisetron
+Droperidol
+Haloperidol
+Meclizine
+Dimenhydrinate
+Diphenhydramine
+Prochlorperazine
+Promethazine
+Scopolamine
+Aprepitant
+Fosaprepitant
+Lorazepam
+Diazepam
+Dexamethasone
+Methylprednisolone
+Dronabinol
+Nabilone
+Dextrose
+Fructose
+Phsophoric Acid
+Loperamide
+Diphenoxylate/Atropine
+Diphenoxylate
+Bismuth Subsalicylate
+Fiaximin
+Metronidazole
+Psyllium
+Methylcellulose
+Polycarbophil
+Polyethylene glycol
+Lactulose
+MagCitrate
+Senna
+Bisacodyl
+Mineral Oil
+Docusate
+Alosteron 
+Lotronex
+Tegaserod
+Dicyclomine
+Hyoscyamine
+Mesalamine
+Sulfasalazine
+Balsalazide
+Prednisone
+Budesonide
+Methylprednisolone
+Metoclopramide
+Pancrelipase
+Enteral
+Parenteral
+Phentermine
+Naltrexon/Buproprione
+Phentermine with Topearamate
+Orlastat
+Ferrous Sulfate
+Ferrous gluconate
+Ferrous fumarate
+Epoetin alfa
+Darbepoetin alfa
+Heparin
+Enoxaparin
+Dalteparin
+Tinzaparin
+Apixaban
+Rivaorxaban
+Edoxaban
+Dabigatran
+Argatroban
+Bivalirudin
+Warfarin
+Aspirin
+Clopidogrel
+Prasugrel
+Ticagrelor
+Ticlopidine
+Dipyridamole
+Cilostazol
+Abciximab
+Eptifibatide
+Tirofiban
+Cyclophosphamide
+Ifosfamide
+Busulfan
+Melphalan
+Casplatin
+Carboplatin
+Oxaliplatin
+Methotrexate
+5-Fluorouracil
+Capecitabine
+Cytarabine
+Gemcitabine
+Blyeomycin
+Doxorubicin
+Daunorubicin
+Vincristine
+Vinblastine
+Paclitaxel
+Docetaxel
+Tamoxifen
+Aromatase Inhibitor
+GnRH agonist/antagonist
+Antiandrogens
+Androgen deprivation therapy
+Growth Factor Receptors
+Tyrosine Kinases
+5-HT3 antagonists
+Dopamine antagonists
+NK1 anatagonists
+Coricosteroids
+Filgrastim
+Pegfilgrastim
+"Combined Hormonal Contraception
+(CHC)"
+"Progestin-Only Pills
+(POP)"
+"Depot Medroxyprogesterone Acetate
+(DMPA)"
+Etonogestrel Implant
+"Levonorgestrel Intrauterine System
+(IUS)"
+"Copper Intrauterine Device
+(IUD)"
+Levonorgestrel EC
+Ulipristal Acetate
+"Copper Intrauterine Device
+(IUD)"
+"Conbined hormonal Contraception
+(CHC)"
+Progestin Therapy
+Levonorgestrel IUD
+NSAIDS
+Transexamic Acid
+Iron Replacement
+"Combined Hormonal Contraception
+(CHC)"
+Progestin Therapy
+Antiandrogens
+Metformin
+NSAIDS
+Combine Hormonal Contraception
+Progestin Therapy
+Levonorgestrel IUD
+GnRH Agonists
+GnRH Antagonist
+Local Vaginal Estrogen Therapy
+Nonhormonal Options for Vasomotor Sx
+Bone Health Medications
+Folic Acid
+Antimetabolite
+Folate antagonist
+Progesterone-Receptor Antagonist
+Prostaglandin E1 analog
+Estrogen-Receptor Blockers
+and Modulators"
+CCB DHP
+NSAIDS
+Beta-2 Adrenergic agonist
+Anticonvulsant 
+Neuromuscular depressant
+Uterotonic hormone/peptide
+Local anesthetics
+Neuraxial Opiods
+Androgen
+PDE-5 Inhibitors
+Prostaglandin E1 analog
+GnRH Agonists
+GnRH Antagonists
+Androgen Receptor Inhibitors
+Androgen-Synthesis Inhibitor
+Tenofovir disoproxil fumarate
+Tenofovir alafenamide
+Emtricitabine
+Lamivudine
+Abacavir
+Zidovudine
+Efavirenz
+Etravirine
+Rilpivirine
+Doravirine
+Nevirapine
+Darunavir
+Atazanavir
+Lopinavir
+Fosamprenavir
+Ritonavir
+Cobicistat
+Dolutegravir
+Bictegravir
+Raltegravir
+Elvitegravir
+Cabotegravir
+Fostemsavir
+Maraviroc
+Enfuvirtide
+Ibalizumab-uiyk
+Tenofovir disoproxil fumarate/emtricitabine
+Tenofovir alafenamide/emtricitabine
+Long acting injectable cabotegravir
