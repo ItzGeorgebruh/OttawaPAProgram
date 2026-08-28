@@ -25,11 +25,28 @@ export default function SystemsPage() {
     setLoading(false);
   };
 
-  const systems = ['All', ...Array.from(new Set(items.map(i => i.body_systems).filter(Boolean)))];
+  // Clean primary system categories for quick, uncluttered filtering
+  const primarySystems = [
+    'All',
+    'Cardiovascular',
+    'Respiratory',
+    'Gastrointestinal',
+    'Neurology',
+    'Endocrine',
+    'Integumentary',
+    'Renal',
+    'Hematologic',
+    'Immunologic',
+    'Musculoskeletal',
+    'Reproductive',
+    'Dermatology',
+    'Psychiatry'
+  ];
 
+  // Filter items where the system string contains the selected primary system (case-insensitive)
   const filtered = selectedSystem === 'All' 
     ? items 
-    : items.filter(i => i.body_systems === selectedSystem);
+    : items.filter(i => i.body_systems?.toLowerCase().includes(selectedSystem.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
@@ -47,8 +64,9 @@ export default function SystemsPage() {
           <p className="text-sm text-slate-500 mt-1">Browse all pharmacology and clinical entries categorized by organ system.</p>
         </div>
 
+        {/* Clean, Organized Primary System Filter Pills */}
         <div className="flex flex-wrap gap-2">
-          {systems.map((sys) => (
+          {primarySystems.map((sys) => (
             <button
               key={sys}
               onClick={() => setSelectedSystem(sys)}
