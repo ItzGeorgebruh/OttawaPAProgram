@@ -90,58 +90,65 @@ export default function PharmacologyPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filtered.map((item) => (
-              <Link 
-                key={item.id} 
-                href={`/view/${item.id}`} 
-                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition flex flex-col justify-between group cursor-pointer"
-              >
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-semibold">
-                        {item.body_systems || 'General'}
-                      </span>
-                      {item.term && (
-                        <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg font-semibold border border-indigo-100">
-                          {item.term}
+            {filtered.map((item) => {
+              const safety = (item.pregnancy_safety || '').toLowerCase();
+              
+              // Determine badge colors based on text content
+              let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200'; // Default neutral
+              
+              if (safety.includes('safe') || safety.includes('good') || safety.includes('category a') || safety.includes('category b')) {
+                badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200'; // Green
+              } else if (safety.includes('unsafe') || safety.includes('contraindicated') || safety.includes('category x')) {
+                badgeStyle = 'bg-rose-50 text-rose-700 border-rose-200'; // Red
+              } else if (safety.includes('caution') || safety.includes('category c') || safety.includes('category d') || safety.includes('monitor')) {
+                badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200'; // Yellow/Amber
+              }
+
+              return (
+                <Link 
+                  key={item.id} 
+                  href={`/view/${item.id}`} 
+                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition flex flex-col justify-between group cursor-pointer"
+                >
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-semibold">
+                          {item.body_systems || 'General'}
                         </span>
+                        {item.term && (
+                          <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg font-semibold border border-indigo-100">
+                            {item.term}
+                          </span>
+                        )}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 transition" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition">
+                        {item.generic_name}
+                      </h3>
+                      {item.brand_names && (
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">
+                          Brands: {item.brand_names}
+                        </p>
                       )}
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 transition" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition">
-                      {item.generic_name}
-                    </h3>
-                    {item.brand_names && (
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">
-                        Brands: {item.brand_names}
-                      </p>
-                    )}
-                  </div>
-                </div>
 
-                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
-                    {item.drug_class || 'Unclassified'}
-                  </span>
-                  
-                  {/* Color-Coded Pregnancy Safety Badge */}
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${
-                    item.pregnancy_safety?.includes('Safe') 
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : // Green
-                    item.pregnancy_safety?.includes('Contraindicated') || item.pregnancy_safety?.includes('Unsafe') 
-                      ? 'bg-rose-50 text-rose-700 border-rose-200' : // Red
-                    item.pregnancy_safety?.includes('Caution') 
-                      ? 'bg-amber-50 text-amber-700 border-amber-200' : // Yellow/Amber
-                      'bg-slate-100 text-slate-600 border-slate-200' // Default neutral
-                  }`}>
-                    {item.pregnancy_safety || 'Pregnancy: N/A'}
-                  </span>
-                </div>
-              </Link>
-            ))}
+                  <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+                      {item.drug_class || 'Unclassified'}
+                    </span>
+                    
+                    {/* Color-Coded Pregnancy Safety Badge */}
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${badgeStyle}`}>
+                      {item.pregnancy_safety || 'Pregnancy: N/A'}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
