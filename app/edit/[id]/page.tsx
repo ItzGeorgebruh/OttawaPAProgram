@@ -16,6 +16,8 @@ const AVAILABLE_SYSTEMS = [
   'Endocrine',
   'Integumentary',
   'Renal',
+  'Genitourinary',
+  'ENT',
   'Hematologic',
   'Immunologic',
   'Musculoskeletal',

@@ -36,14 +36,14 @@ export default function ClinicalPage() {
     return matchesSearch && matchesTerm;
   });
 
-  // Clean up body system display to omit metabolic and standardize GI/GU
+  // Automatically map otic, ocular, and ENT tags to display uniformly as "ENT"
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
-    const tags = text.split(',').map(t => t.trim());
+    const tags = text.split(',').map((t: string) => t.trim());
     const mappedTags = new Set<string>();
 
-    tags.forEach(tag => {
+    tags.forEach((tag: string) => {
       const lower = tag.toLowerCase();
       if (lower === 'metabolic') return;
       
@@ -51,6 +51,15 @@ export default function ClinicalPage() {
         mappedTags.add('Gastrointestinal');
       } else if (lower === 'gu' || lower === 'genitourinary') {
         mappedTags.add('Genitourinary');
+      } else if (
+        lower.includes('otic') || 
+        lower.includes('ocular') || 
+        lower.includes('ophthalm') || 
+        lower.includes('ent') || 
+        lower.includes('otolaryngology') ||
+        lower.includes('special senses')
+      ) {
+        mappedTags.add('ENT');
       } else {
         mappedTags.add(tag);
       }
