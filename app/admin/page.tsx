@@ -18,8 +18,8 @@ function AdminForm() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const [form, setForm] = useState({
-    folder: defaultFolder,
-    term: 'Term 1',
+    section: defaultFolder,          // Updated from 'folder' to 'section'
+    didactic_term: 'Term 1',         // Updated from 'term' to 'didactic_term'
     pregnancy_safety: 'Not Specified',
     generic_name: '',
     brand_names: '',
@@ -56,7 +56,7 @@ function AdminForm() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: form.generic_name, type: form.folder }),
+        body: JSON.stringify({ query: form.generic_name, type: form.section }),
       });
 
       const data = await response.json();
@@ -99,13 +99,13 @@ function AdminForm() {
       setErrorMsg(error.message);
       setSaving(false);
     } else {
-      const redirectPath = form.folder === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
+      const redirectPath = form.section === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
       router.push(redirectPath);
       router.refresh();
     }
   };
 
-  const isClinical = form.folder === 'Clinical Medicine';
+  const isClinical = form.section === 'Clinical Medicine';
   const cancelLink = isClinical ? '/clinical' : '/pharmacology';
 
   return (
@@ -150,8 +150,8 @@ function AdminForm() {
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Section</label>
               <select
-                name="folder"
-                value={form.folder}
+                name="section"
+                value={form.section}
                 onChange={handleChange}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
@@ -162,8 +162,8 @@ function AdminForm() {
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Didactic Term</label>
               <select
-                name="term"
-                value={form.term}
+                name="didactic_term"
+                value={form.didactic_term}
                 onChange={handleChange}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
