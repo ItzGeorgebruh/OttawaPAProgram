@@ -175,7 +175,7 @@ function AdminForm() {
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                {isClinical ? 'Disease / Condition Name' : 'Generic_Name'}
+                {isClinical ? 'Disease / Condition Name' : 'generic_Name'}
               </label>
               <input
                 type="text"
