@@ -24,7 +24,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
   const fetchRecord = async () => {
     const { data, error } = await supabase
-      .from('medications')
+      .from('drugs')
       .select('*')
       .eq('id', id)
       .single();
@@ -46,7 +46,7 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this entry?')) {
-      const { error } = await supabase.from('medications').delete().eq('id', id);
+      const { error } = await supabase.from('drugs').delete().eq('id', id);
       if (!error) {
         router.push(record?.folder === 'Clinical Medicine' ? '/clinical' : '/pharmacology');
         router.refresh();

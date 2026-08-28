@@ -18,7 +18,7 @@ export default function ClinicalPage() {
   const fetchDiseases = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('medications')
+      .from('drugs')
       .select('*')
       .eq('folder', 'Clinical Medicine')
       .order('generic_name', { ascending: true });

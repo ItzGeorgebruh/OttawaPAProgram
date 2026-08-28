@@ -45,7 +45,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
   const fetchRecord = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('medications')
+      .from('drugs')
       .select('*')
       .eq('id', id)
       .single();
@@ -222,7 +222,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                {isClinical ? 'Disease / Condition Name' : 'Generic_Name'}
+                {isClinical ? 'Disease / Condition Name' : 'generic_Name'}
               </label>
               <input
                 type="text"
