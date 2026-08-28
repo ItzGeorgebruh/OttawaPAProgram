@@ -171,7 +171,8 @@ function AdminForm() {
                 <option value="Term 2">Term 2</option>
                 <option value="Term 3">Term 3</option>
                 <option value="Term 4">Term 4</option>
-                <option value="Clinical Year">Clinical Year</option>
+                <option value="Term 5">Term 5</option>
+                <option value="Term 6">Term 6</option>
               </select>
             </div>
             <div>
