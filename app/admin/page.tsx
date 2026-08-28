@@ -246,11 +246,11 @@ function AdminForm() {
                   name="pregnancy_safety"
                   value={form.pregnancy_safety}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700 cursor-pointer"
                 >
-                  <option value="Safe (Category A/B)">Safe (Category A/B)</option>
-                  <option value="Use with Caution (Category C)">Use with Caution (Category C)</option>
-                  <option value="Contraindicated / Unsafe (Category D/X)">Contraindicated / Unsafe (Category D/X)</option>
+                  <option value="Safe">Safe</option>
+                  <option value="Use with caution">Use with caution</option>
+                  <option value="Contraindicated">Contraindicated</option>
                   <option value="Not Specified">Not Specified</option>
                 </select>
               </div>

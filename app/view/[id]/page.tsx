@@ -16,13 +16,13 @@ const getPregnancyDisplay = (safetyText: string) => {
       style: 'bg-emerald-50 text-emerald-700 border-emerald-200'
     };
   } 
-  if (safety.includes('unsafe') || safety.includes('contraindicated') || safety.includes('category x')) {
+  if (safety.includes('unsafe') || safety.includes('contraindicated') || safety.includes('category x') || safety.includes('category d')) {
     return {
       label: 'Not safe',
       style: 'bg-rose-50 text-rose-700 border-rose-200'
     };
   } 
-  if (safety.includes('caution') || safety.includes('category c') || safety.includes('category d') || safety.includes('monitor')) {
+  if (safety.includes('caution') || safety.includes('category c') || safety.includes('monitor')) {
     return {
       label: 'Use with caution',
       style: 'bg-amber-50 text-amber-700 border-amber-200'
@@ -63,7 +63,6 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
   const fetchAllDrugs = async () => {
     setLoading(true);
-    // Fetch all pharmacology records to match against treatment names/classes
     const { data } = await supabase
       .from('medications')
       .select('id, generic_name, drug_class, folder')
@@ -83,7 +82,6 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
     }
   };
 
-  // Upgraded formatter to break text into clean bullet points automatically
   const formatTextAsBullets = (text: string) => {
     if (!text) return <span className="text-slate-400">None specified</span>;
     
@@ -99,10 +97,9 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
         );
       }
     } catch (e) {
-      // Not JSON, handle regular string
+      // Not JSON
     }
 
-    // Split text by semicolons, commas, or periods followed by spaces to generate clean bullets
     const items = text
       .split(/;\s*|,\s*(?![^()]*\))|\.\s+/)
       .map(item => item.trim().replace(/\.$/, ''))
@@ -121,7 +118,6 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
     );
   };
 
-  // Smart treatment cross-linker supporting direct names and class abbreviations (e.g., ACEi)
   const renderClickableTreatment = (text: string) => {
     if (!text) return <span className="text-slate-400">None specified</span>;
     
@@ -137,13 +133,11 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
     const matchedDrugs = allDrugs.filter(drug => {
       const nameMatch = drug.generic_name && plainText.toLowerCase().includes(drug.generic_name.toLowerCase());
-      
       const classMatch = drug.drug_class && (
         plainText.toLowerCase().includes(drug.drug_class.toLowerCase()) ||
         (drug.drug_class.toLowerCase().includes('ace') && plainText.includes('ACEi')) ||
         (drug.drug_class.toLowerCase().includes('arb') && plainText.includes('ARB'))
       );
-
       return nameMatch || classMatch;
     });
 
@@ -216,7 +210,6 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
               {record.drug_class || 'Unclassified'}
             </span>
-
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{record.generic_name}</h1>
           {record.brand_names && (
@@ -228,12 +221,13 @@ export default function ViewMedicationPage({ params }: { params: Promise<{ id: s
 
         {!isClinical ? (
           <div className="space-y-4">
+            {/* Clean Pregnancy Safety Card (No raw text strings) */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Pregnancy Safety Status</h3>
-                <p className="text-sm font-semibold text-slate-800 mt-0.5">{record.pregnancy_safety || 'Not specified'}</p>
+                <p className="text-sm font-medium text-slate-600 mt-0.5">Clinical Risk Evaluation</p>
               </div>
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border ${pregnancyDisplay.style}`}>
+              <span className={`text-xs font-bold px-3.5 py-1.5 rounded-xl border ${pregnancyDisplay.style}`}>
                 {pregnancyDisplay.label}
               </span>
             </div>
