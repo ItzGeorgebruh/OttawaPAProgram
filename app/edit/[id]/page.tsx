@@ -17,8 +17,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
   const [errorMsg, setErrorMsg] = useState('');
 
   const [form, setForm] = useState({
-    folder: 'Pharmacology',
-    term: 'Term 1',
+    section: 'Pharmacology',          // Updated from 'folder' to 'section'
+    didactic_term: 'Term 1',          // Updated from 'term' to 'didactic_term'
     pregnancy_safety: 'Not Specified',
     generic_name: '',
     brand_names: '',
@@ -45,7 +45,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
   const fetchRecord = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('drugs')
+      .from('drugs')                 // FIXED: Changed from 'medications' to 'drugs'
       .select('*')
       .eq('id', id)
       .single();
@@ -55,8 +55,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
       setErrorMsg('Failed to load record.');
     } else if (data) {
       setForm({
-        folder: data.folder || 'Pharmacology',
-        term: data.term || 'Term 1',
+        section: data.section || 'Pharmacology',               // FIXED
+        didactic_term: data.didactic_term || 'Term 1',         // FIXED
         pregnancy_safety: data.pregnancy_safety || 'Not Specified',
         generic_name: data.generic_name || '',
         brand_names: data.brand_names || '',
@@ -96,7 +96,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: form.generic_name, type: form.folder }),
+        body: JSON.stringify({ query: form.generic_name, type: form.section }),
       });
 
       const data = await response.json();
@@ -133,7 +133,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
     setErrorMsg('');
 
     const { error } = await supabase
-      .from('medications')
+      .from('drugs')                 // FIXED: Changed from 'medications' to 'drugs'
       .update(form)
       .eq('id', id);
 
@@ -142,7 +142,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
       setErrorMsg(error.message);
       setSaving(false);
     } else {
-      router.push(`/view/${id}`);
+      const redirectPath = form.section === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
+      router.push(redirectPath);
       router.refresh();
     }
   };
@@ -151,7 +152,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading editor...</div>;
   }
 
-  const isClinical = form.folder === 'Clinical Medicine';
+  const isClinical = form.section === 'Clinical Medicine';
   const cancelLink = isClinical ? '/clinical' : '/pharmacology';
 
   return (
@@ -196,8 +197,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Section</label>
               <select
-                name="folder"
-                value={form.folder}
+                name="section"
+                value={form.section}
                 onChange={handleChange}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
@@ -208,8 +209,8 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Didactic Term</label>
               <select
-                name="term"
-                value={form.term}
+                name="didactic_term"
+                value={form.didactic_term}
                 onChange={handleChange}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
@@ -223,7 +224,7 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                {isClinical ? 'Disease / Condition Name' : 'generic_Name'}
+                {isClinical ? 'Disease / Condition Name' : 'generic_name'}
               </label>
               <input
                 type="text"
@@ -294,9 +295,9 @@ export default function EditMedicationPage({ params }: { params: Promise<{ id: s
                   onChange={handleChange}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
-                  <option value="Safe (Category A/B)">Safe (Category A/B)</option>
-                  <option value="Use with Caution (Category C)">Use with Caution (Category C)</option>
-                  <option value="Contraindicated / Unsafe (Category D/X)">Contraindicated / Unsafe (Category D/X)</option>
+                  <option value="Safe">Safe</option>
+                  <option value="Use with caution">Use with caution</option>
+                  <option value="Contraindicated">Contraindicated</option>
                   <option value="Not Specified">Not Specified</option>
                 </select>
               </div>
