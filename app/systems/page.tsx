@@ -13,7 +13,7 @@ function SystemsContent() {
   const searchParams = useSearchParams();
   
   const initialSystem = searchParams.get('system') || 'All';
-  const initialSection = searchParams.get('section') || 'Pharmacology'; // 'Pharmacology' or 'Clinical Medicine'
+  const initialSection = searchParams.get('section') || 'Pharmacology';
   
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +52,7 @@ function SystemsContent() {
     'Integumentary',
     'Renal',
     'Genitourinary',
+    'ENT', // Added here
     'Hematologic',
     'Immunologic',
     'Musculoskeletal',
@@ -81,9 +82,9 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  // Safe token-boundary filter helper
-  const matchesSystemFilter = (itemSystemText: string, filter: string) => {
-    if (!itemSystemText) return false;
+  // Intelligent filter helper with catch-all keywords for ENT
+  const matchesSystemFilter = (item: any, filter: string) => {
+    const itemSystemText = item.body_systems || '';
     const text = itemSystemText.toLowerCase();
     const target = filter.toLowerCase();
 
@@ -97,10 +98,23 @@ function SystemsContent() {
       return tokens.includes('gu') || tokens.some(t => t.includes('genitourinary'));
     }
 
+    if (target === 'ent') {
+      if (tokens.includes('ent') || tokens.some(t => t.includes('otolaryngology'))) {
+        return true;
+      }
+      // Intelligent catch-all search through name, class, or symptoms for ENT pathology
+      const combinedText = `${item.generic_name || ''} ${item.drug_class || ''} ${item.symptoms || ''} ${item.indications || ''}`.toLowerCase();
+      const entKeywords = [
+        'ear', 'nose', 'throat', 'otitis', 'sinusitis', 'pharyngitis', 
+        'tonsillitis', 'rhinitis', 'laryngitis', 'tinnitus', 'vertigo', 
+        'epistaxis', 'parotitis', 'mastoiditis', 'laryngotracheobronchitis'
+      ];
+      return entKeywords.some(keyword => combinedText.includes(keyword));
+    }
+
     return tokens.some(token => token.includes(target));
   };
 
-  // Cleans up tag display
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
@@ -124,10 +138,9 @@ function SystemsContent() {
     return result.length > 0 ? result.join(', ') : 'General';
   };
 
-  // Filter items by section (Pharmacology vs Clinical Medicine) AND system
   const filtered = items.filter(item => {
     const matchesSection = (item.section || 'Pharmacology') === activeSection;
-    const matchesSystem = selectedSystem === 'All' || matchesSystemFilter(item.body_systems, selectedSystem);
+    const matchesSystem = selectedSystem === 'All' || matchesSystemFilter(item, selectedSystem);
     return matchesSection && matchesSystem;
   });
 
@@ -142,7 +155,6 @@ function SystemsContent() {
             <ArrowLeft className="w-4 h-4" /> {backText}
           </Link>
 
-          {/* Section Toggle Tabs */}
           <div className="flex bg-slate-200 p-1 rounded-xl">
             <button
               onClick={() => handleSelectSection('Pharmacology')}
