@@ -17,10 +17,11 @@ export default function ClinicalPage() {
 
   const fetchDiseases = async () => {
     setLoading(true);
+    // FIXED: Changed 'folder' to 'section'
     const { data, error } = await supabase
       .from('drugs')
       .select('*')
-      .eq('folder', 'Clinical Medicine')
+      .eq('section', 'Clinical Medicine')
       .order('generic_name', { ascending: true });
 
     if (!error) setItems(data || []);
@@ -31,7 +32,9 @@ export default function ClinicalPage() {
     const matchesSearch =
       item.generic_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.brand_names?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTerm = selectedTerm === 'All' || item.term === selectedTerm;
+    
+    // FIXED: Changed 'item.term' to 'item.didactic_term'
+    const matchesTerm = selectedTerm === 'All' || item.didactic_term === selectedTerm;
     return matchesSearch && matchesTerm;
   });
 
@@ -102,9 +105,9 @@ export default function ClinicalPage() {
                     <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition">
                       {item.generic_name}
                     </h3>
-                    {item.term && (
+                    {item.didactic_term && (
                       <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-semibold border border-indigo-100">
-                        {item.term}
+                        {item.didactic_term}
                       </span>
                     )}
                   </div>
