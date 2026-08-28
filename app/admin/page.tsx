@@ -92,7 +92,8 @@ function AdminForm() {
     setSaving(true);
     setErrorMsg('');
 
-    const { data, error } = await supabase.from('medications').insert([form]).select();
+    // Updated from 'medications' to 'drugs' to match your database table
+    const { data, error } = await supabase.from('drugs').insert([form]).select();
 
     if (error) {
       console.error('Error saving record:', error);
@@ -175,7 +176,7 @@ function AdminForm() {
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                {isClinical ? 'Disease / Condition Name' : 'generic_Name'}
+                {isClinical ? 'Disease / Condition Name' : 'generic_name'}
               </label>
               <input
                 type="text"
