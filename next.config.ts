@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Leave out output: 'export' so Vercel can handle server-side/dynamic rendering properly
 };
 
 export default nextConfig;
