@@ -17,10 +17,11 @@ export default function PharmacologyPage() {
 
   const fetchDrugs = async () => {
     setLoading(true);
+    // FIXED: Changed 'folder' to 'section'
     const { data, error } = await supabase
       .from('drugs')
       .select('*')
-      .eq('folder', 'Pharmacology')
+      .eq('section', 'Pharmacology')
       .order('generic_name', { ascending: true });
 
     if (!error) setItems(data || []);
@@ -31,7 +32,9 @@ export default function PharmacologyPage() {
     const matchesSearch =
       item.generic_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.brand_names?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTerm = selectedTerm === 'All' || item.term === selectedTerm;
+    
+    // FIXED: Changed 'item.term' to 'item.didactic_term'
+    const matchesTerm = selectedTerm === 'All' || item.didactic_term === selectedTerm;
     return matchesSearch && matchesTerm;
   });
 
@@ -58,7 +61,6 @@ export default function PharmacologyPage() {
       };
     }
     
-    // Fallback if blank or unrecognized
     return {
       label: safetyText || 'Not Specified',
       style: 'bg-slate-100 text-slate-600 border-slate-200'
@@ -136,9 +138,9 @@ export default function PharmacologyPage() {
                         <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-semibold">
                           {item.body_systems || 'General'}
                         </span>
-                        {item.term && (
+                        {item.didactic_term && (
                           <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg font-semibold border border-indigo-100">
-                            {item.term}
+                            {item.didactic_term}
                           </span>
                         )}
                       </div>
@@ -161,7 +163,6 @@ export default function PharmacologyPage() {
                       {item.drug_class || 'Unclassified'}
                     </span>
                     
-                    {/* Clean Replaced Pregnancy Badge */}
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${pregnancyDisplay.style}`}>
                       {pregnancyDisplay.label}
                     </span>

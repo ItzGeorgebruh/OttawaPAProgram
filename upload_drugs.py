@@ -20,9 +20,12 @@ print(f'Found {len(df)} drugs to upload. Starting...')
 
 # 3. Loop through each row and push it to Supabase
 for index, row in df.iterrows():
+    sec = row['section'] if 'section' in row and pd.notna(row['section']) else 'Pharmacology'
+    term = row['didactic_term'] if 'didactic_term' in row and pd.notna(row['didactic_term']) else 'Term 1'
+
     payload = {
-        'section': str(row.get('folder', 'Pharmacology')),
-        'didactic_term': str(row.get('term', 'Term 1')),
+        'section': str(sec).strip() or 'Pharmacology',
+        'didactic_term': str(term).strip() or 'Term 1',
         'generic_name': str(row.get('generic_name', '')),
         'brand_names': str(row.get('brand_names', '')),
         'drug_class': str(row.get('drug_class', '')),
