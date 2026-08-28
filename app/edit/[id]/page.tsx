@@ -181,8 +181,8 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
       setErrorMsg(error.message);
       setSaving(false);
     } else {
-      const redirectPath = form.section === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
-      router.push(redirectPath);
+      // Redirect straight back to the detail view page for this entry
+      router.push(`/view/${id}`);
       router.refresh();
     }
   };
@@ -192,7 +192,7 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
   }
 
   const isClinical = form.section === 'Clinical Medicine';
-  const cancelLink = isClinical ? '/clinical' : '/pharmacology';
+  const cancelLink = `/view/${id}`;
   const selectedSystemsList = form.body_systems ? form.body_systems.split(',').map(s => s.trim()) : [];
 
   return (
@@ -204,7 +204,7 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             href={cancelLink}
             className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to List
+            <ArrowLeft className="w-4 h-4" /> Cancel & Return to Details
           </Link>
         </div>
 
@@ -344,7 +344,6 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
                 );
               })}
             </div>
-            {/* Manual fallback input in case a custom system name is needed */}
             <input
               type="text"
               name="body_systems"
