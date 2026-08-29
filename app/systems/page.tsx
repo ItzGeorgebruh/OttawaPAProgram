@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Layers, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Layers, ChevronRight, Home } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,14 +82,12 @@ function SystemsContent() {
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  // Intelligent filter helper ensuring Integumentary is strictly protected and excluded from ENT
   const matchesSystemFilter = (item: any, filter: string) => {
     const itemSystemText = (item.body_systems || '').toLowerCase();
     const target = filter.toLowerCase();
 
     if (target === 'all') return true;
 
-    // If looking specifically for Integumentary
     if (target === 'integumentary') {
       return itemSystemText.includes('integumentary');
     }
@@ -105,7 +103,6 @@ function SystemsContent() {
     }
 
     if (target === 'ent') {
-      // Never let Integumentary fall into ENT
       if (itemSystemText.includes('integumentary')) {
         return false;
       }
@@ -137,7 +134,6 @@ function SystemsContent() {
     return itemSystemText.includes(target);
   };
 
-  // Automatically map otic, ocular, and ENT tags while strictly preserving Integumentary
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
@@ -148,7 +144,6 @@ function SystemsContent() {
       const lower = tag.toLowerCase();
       if (lower === 'metabolic') return;
       
-      // Explicitly keep Integumentary as its own system
       if (lower.includes('integumentary')) {
         mappedTags.add('Integumentary');
       } else if (lower === 'gi' || lower === 'gastrointestinal') {
@@ -185,10 +180,15 @@ function SystemsContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
-            <ArrowLeft className="w-4 h-4" /> {backText}
-          </Link>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
+              <ArrowLeft className="w-4 h-4" /> {backText}
+            </Link>
+            <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
+              <Home className="w-4 h-4 text-slate-500" /> Main Menu
+            </Link>
+          </div>
 
           <div className="flex bg-slate-200 p-1 rounded-xl">
             <button

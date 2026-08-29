@@ -4,7 +4,7 @@ import React, { useEffect, useState, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ExternalLink, Home } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,6 +69,7 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
 
   const fromParam = searchParams.get('from');
   const systemParam = searchParams.get('system');
+  const sectionParam = searchParams.get('section');
 
   const [record, setRecord] = useState<any>(null);
   const [allDrugs, setAllDrugs] = useState<any[]>([]);
@@ -204,11 +205,15 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
 
   const isClinical = record.section === 'Clinical Medicine';
   
-  // Determine dynamic back link preserving system filter if coming from systems view
   let backLink = isClinical ? '/clinical' : '/pharmacology';
   let backText = isClinical ? 'Back to Clinical' : 'Back to Pharmacology';
+  
   if (fromParam === 'systems') {
-    backLink = systemParam ? `/systems?system=${encodeURIComponent(systemParam)}` : '/systems';
+    const queryParams = new URLSearchParams();
+    if (systemParam) queryParams.set('system', systemParam);
+    if (sectionParam) queryParams.set('section', sectionParam);
+    
+    backLink = queryParams.toString() ? `/systems?${queryParams.toString()}` : '/systems';
     backText = systemParam ? `Back to ${systemParam}` : 'Back to Systems';
   }
 
@@ -218,10 +223,15 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-3xl mx-auto space-y-6">
         
-        <div className="flex items-center justify-between">
-          <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
-            <ArrowLeft className="w-4 h-4" /> {backText}
-          </Link>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
+              <ArrowLeft className="w-4 h-4" /> {backText}
+            </Link>
+            <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
+              <Home className="w-4 h-4 text-slate-500" /> Main Menu
+            </Link>
+          </div>
 
           <div className="flex items-center gap-2">
             <Link href={`/edit/${id}`} className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
@@ -248,7 +258,6 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
               {record.drug_class || 'Unclassified'}
             </span>
-
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{record.generic_name}</h1>
           {record.brand_names && (
