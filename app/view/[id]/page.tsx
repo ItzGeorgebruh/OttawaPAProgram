@@ -4,7 +4,7 @@ import React, { useEffect, useState, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star, PlusCircle, Image as ImageIcon } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -256,7 +256,6 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Single Combined Add New Button */}
             <Link 
               href="/admin" 
               className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 px-3.5 py-2 rounded-xl transition shadow-sm"
@@ -300,7 +299,6 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
               {record.drug_class || 'Unclassified'}
             </span>
-
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{record.generic_name}</h1>
           {record.brand_names && (
@@ -309,6 +307,22 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             </p>
           )}
         </div>
+
+        {/* Display Image if Available */}
+        {record.image_url && (
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4" /> Reference Image / Diagram
+            </h3>
+            <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50 flex justify-center">
+              <img 
+                src={record.image_url} 
+                alt={record.generic_name} 
+                className="max-h-96 w-auto object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        )}
 
         {!isClinical ? (
           <div className="space-y-4">
@@ -381,6 +395,14 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
               <h3 className="text-xs font-bold uppercase tracking-wider text-rose-500">Consequences (Complications)</h3>
               {formatTextAsBullets(record.complications)}
             </div>
+          </div>
+        )}
+
+        {/* Display Additional Notes Section if Available */}
+        {record.notes && (
+          <div className="bg-amber-50/60 p-6 rounded-2xl border border-amber-200/80 shadow-sm space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-700">Additional Notes & Reminders</h3>
+            {formatTextAsBullets(record.notes)}
           </div>
         )}
 

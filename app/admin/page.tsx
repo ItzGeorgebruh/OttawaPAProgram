@@ -4,7 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Sparkles, AlertCircle, Check } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, AlertCircle, Check, Image as ImageIcon } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +56,8 @@ function AdminForm() {
     diagnostics_labs: '',
     treatment: '',
     complications: '',
+    image_url: '',
+    notes: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -117,6 +119,8 @@ function AdminForm() {
         diagnostics_labs: data.diagnostics_labs || prev.diagnostics_labs,
         treatment: data.treatment || prev.treatment,
         complications: data.complications || prev.complications,
+        image_url: data.image_url || prev.image_url,
+        notes: data.notes || prev.notes,
       }));
     } catch (err: any) {
       setErrorMsg(err.message || 'Error generating content with AI.');
@@ -316,6 +320,21 @@ function AdminForm() {
             />
           </div>
 
+          {/* IMAGE URL INPUT */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-slate-400" /> Reference Image / Diagram URL
+            </label>
+            <input
+              type="text"
+              name="image_url"
+              value={form.image_url}
+              onChange={handleChange}
+              placeholder="https://example.com/image.jpg"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           {!isClinical && (
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Pregnancy Safety</label>
@@ -400,6 +419,19 @@ function AdminForm() {
               </div>
             </div>
           )}
+
+          {/* ADDITIONAL NOTES TEXTAREA */}
+          <div className="pt-4 border-t border-slate-100">
+            <label className="block text-xs font-bold uppercase tracking-wider text-amber-700 mb-1">Additional Notes & Personal Pearls</label>
+            <textarea
+              name="notes"
+              rows={3}
+              value={form.notes}
+              onChange={handleChange}
+              placeholder="Add any extra notes, high-yield reminders, or mnemonics here..."
+              className="w-full px-3.5 py-2.5 rounded-xl border border-amber-200 bg-amber-50/40 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+          </div>
 
           <div className="flex justify-end pt-4 border-t border-slate-100">
             <button
