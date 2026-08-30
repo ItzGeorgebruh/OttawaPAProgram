@@ -115,28 +115,25 @@ function SystemsContent() {
 
     return filters.some(target => {
       const lowerTarget = target.toLowerCase();
-      if (lowerTarget === 'integumentary') {
-        return itemSystemText.includes('integumentary');
-      }
+      
+      // Flexible matching: check if the item's system text includes the target keyword anywhere
+      if (itemSystemText.includes(lowerTarget)) return true;
 
-      const tokens = itemSystemText.split(/,\s*|\s+/).map((t: string) => t.trim());
-
-      if (lowerTarget === 'gastrointestinal') {
-        return tokens.includes('gi') || tokens.some((t: string) => t.includes('gastrointestinal'));
+      // Special handle aliases/mappings
+      if (lowerTarget === 'gastrointestinal' && (itemSystemText.includes('gi') || itemSystemText.includes('gastrointestinal'))) {
+        return true;
       }
-      if (lowerTarget === 'genitourinary') {
-        return tokens.includes('gu') || tokens.some((t: string) => t.includes('genitourinary'));
+      if (lowerTarget === 'genitourinary' && (itemSystemText.includes('gu') || itemSystemText.includes('genitourinary'))) {
+        return true;
       }
-      if (lowerTarget === 'neurology') {
-        return itemSystemText.includes('neurology') || itemSystemText.includes('nervous');
+      if (lowerTarget === 'neurology' && (itemSystemText.includes('neurology') || itemSystemText.includes('nervous'))) {
+        return true;
       }
       if (lowerTarget === 'ent') {
-        if (itemSystemText.includes('integumentary')) return false;
-        return tokens.some((t: string) => 
-          t.includes('ent') || t.includes('otic') || t.includes('ocular') || t.includes('ophthalm') || t.includes('otolaryngology') || t.includes('special senses')
-        );
+        return itemSystemText.includes('ent') || itemSystemText.includes('otic') || itemSystemText.includes('ocular') || itemSystemText.includes('ophthalm') || itemSystemText.includes('otolaryngology') || itemSystemText.includes('special senses');
       }
-      return itemSystemText.includes(lowerTarget);
+
+      return false;
     });
   };
 
