@@ -180,14 +180,20 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
       }
     } catch (e) {}
 
+    // Strictly match only true single generic names (ignoring rows with commas or plus signs)
     const matchedDrugs = allDrugs.filter(drug => {
-      const nameMatch = drug.generic_name && plainText.toLowerCase().includes(drug.generic_name.toLowerCase());
-      const classMatch = drug.drug_class && (
-        plainText.toLowerCase().includes(drug.drug_class.toLowerCase()) ||
-        (drug.drug_class.toLowerCase().includes('ace') && plainText.includes('ACEi')) ||
-        (drug.drug_class.toLowerCase().includes('arb') && plainText.includes('ARB'))
-      );
-      return nameMatch || classMatch;
+      if (!drug.generic_name) return false;
+      const name = drug.generic_name.trim();
+      
+      // Reject grouped or combo rows that have commas or plus signs
+      if (name.includes(',') || name.includes('+')) return false;
+      
+      const lowerName = name.toLowerCase();
+      if (lowerName.length < 4) return false; // Ignore very short names to prevent false triggers
+
+      // Enforce strict word boundary matching
+      const regex = new RegExp(`\\b${lowerName}\\b`, 'i');
+      return regex.test(plainText);
     });
 
     if (matchedDrugs.length === 0) {
