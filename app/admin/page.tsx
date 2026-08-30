@@ -21,6 +21,7 @@ const AVAILABLE_SYSTEMS = [
   'Musculoskeletal',
   'Reproductive',
   'Dermatology',
+  'ENT',
   'Psychiatry',
   'Systemic',
   'Immune'
@@ -129,12 +130,21 @@ function AdminForm() {
     setSaving(true);
     setErrorMsg('');
 
-    const { error } = await supabase.from('drugs').insert([form]);
+    // Insert record and request the newly created row back with its ID
+    const { data, error } = await supabase
+      .from('drugs')
+      .insert([form])
+      .select()
+      .single();
 
     if (error) {
       console.error('Error saving record:', error);
       setErrorMsg(error.message);
       setSaving(false);
+    } else if (data && data.id) {
+      // Instantly redirect to the new item's detail view page
+      router.push(`/view/${data.id}`);
+      router.refresh();
     } else {
       const redirectPath = form.section === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
       router.push(redirectPath);
