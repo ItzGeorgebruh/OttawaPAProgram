@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Layers, ChevronRight, Home } from 'lucide-react';
+import { ArrowLeft, Layers, ChevronRight, Home, Check } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,12 +12,14 @@ function SystemsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const initialSystem = searchParams.get('system') || 'All';
   const initialSection = searchParams.get('section') || 'Pharmacology';
   
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSystem, setSelectedSystem] = useState(initialSystem);
+  
+  // Use sets or arrays for multi-select states
+  const [selectedSystems, setSelectedSystems] = useState<string[]>(['All']);
+  const [selectedTerms, setSelectedTerms] = useState<string[]>(['All']);
   const [activeSection, setActiveSection] = useState(initialSection);
 
   useEffect(() => {
@@ -25,9 +27,7 @@ function SystemsContent() {
   }, []);
 
   useEffect(() => {
-    const sysParam = searchParams.get('system');
     const secParam = searchParams.get('section');
-    if (sysParam) setSelectedSystem(sysParam);
     if (secParam) setActiveSection(secParam);
   }, [searchParams]);
 
@@ -43,7 +43,6 @@ function SystemsContent() {
   };
 
   const primarySystems = [
-    'All',
     'Cardiovascular',
     'Respiratory',
     'Gastrointestinal',
@@ -61,82 +60,90 @@ function SystemsContent() {
     'Psychiatry'
   ];
 
-  const handleSelectSystem = (sys: string) => {
-    setSelectedSystem(sys);
-    updateUrl(sys, activeSection);
+  const didacticTerms = ['Term 1', 'Term 2', 'Term 3', 'Term 4', 'Term 5', 'Term 6'];
+
+  const toggleSystem = (sys: string) => {
+    if (sys === 'All') {
+      setSelectedSystems(['All']);
+      return;
+    }
+    
+    let updated = selectedSystems.filter(s => s !== 'All');
+    if (updated.includes(sys)) {
+      updated = updated.filter(s => s !== sys);
+    } else {
+      updated.push(sys);
+    }
+    
+    if (updated.length === 0) {
+      setSelectedSystems(['All']);
+    } else {
+      setSelectedSystems(updated);
+    }
+  };
+
+  const toggleTerm = (term: string) => {
+    if (term === 'All') {
+      setSelectedTerms(['All']);
+      return;
+    }
+    
+    let updated = selectedTerms.filter(t => t !== 'All');
+    if (updated.includes(term)) {
+      updated = updated.filter(t => t !== term);
+    } else {
+      updated.push(term);
+    }
+    
+    if (updated.length === 0) {
+      setSelectedTerms(['All']);
+    } else {
+      setSelectedTerms(updated);
+    }
   };
 
   const handleSelectSection = (sec: string) => {
     setActiveSection(sec);
-    updateUrl(selectedSystem, sec);
-  };
-
-  const updateUrl = (sys: string, sec: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (sys === 'All') {
-      params.delete('system');
-    } else {
-      params.set('system', sys);
-    }
     params.set('section', sec);
     router.replace(`/systems?${params.toString()}`, { scroll: false });
   };
 
-  const matchesSystemFilter = (item: any, filter: string) => {
+  const matchesSystemFilter = (item: any, filters: string[]) => {
+    if (filters.includes('All')) return true;
     const itemSystemText = (item.body_systems || '').toLowerCase();
-    const target = filter.toLowerCase();
 
-    if (target === 'all') return true;
-
-    if (target === 'integumentary') {
-      return itemSystemText.includes('integumentary');
-    }
-
-    const tokens = itemSystemText.split(/,\s*|\s+/).map((t: string) => t.trim());
-
-    if (target === 'gastrointestinal') {
-      return tokens.includes('gi') || tokens.some((t: string) => t.includes('gastrointestinal'));
-    }
-    
-    if (target === 'genitourinary') {
-      return tokens.includes('gu') || tokens.some((t: string) => t.includes('genitourinary'));
-    }
-
-    if (target === 'ent') {
-      if (itemSystemText.includes('integumentary')) {
-        return false;
+    return filters.some(target => {
+      const lowerTarget = target.toLowerCase();
+      if (lowerTarget === 'integumentary') {
+        return itemSystemText.includes('integumentary');
       }
 
-      if (
-        tokens.some((t: string) => 
-          t.includes('ent') || 
-          t.includes('otic') || 
-          t.includes('ocular') || 
-          t.includes('ophthalm') || 
-          t.includes('otolaryngology') ||
-          t.includes('special senses')
-        )
-      ) {
-        return true;
-      }
-      
-      const combinedText = `${item.generic_name || ''} ${item.drug_class || ''} ${item.symptoms || ''} ${item.indications || ''}`.toLowerCase();
-      const entKeywords = [
-        'ear', 'nose', 'throat', 'otitis', 'sinusitis', 'pharyngitis', 
-        'tonsillitis', 'rhinitis', 'laryngitis', 'tinnitus', 'vertigo', 
-        'epistaxis', 'parotitis', 'mastoiditis', 'laryngotracheobronchitis',
-        'eye', 'vision', 'glaucoma', 'uveitis', 'amblyopia', 'cataract',
-        'conjunctivitis', 'retinopathy', 'macular', 'strabismus'
-      ];
-      return entKeywords.some((keyword: string) => combinedText.includes(keyword));
-    }
+      const tokens = itemSystemText.split(/,\s*|\s+/).map((t: string) => t.trim());
 
-    return itemSystemText.includes(target);
+      if (lowerTarget === 'gastrointestinal') {
+        return tokens.includes('gi') || tokens.some((t: string) => t.includes('gastrointestinal'));
+      }
+      if (lowerTarget === 'genitourinary') {
+        return tokens.includes('gu') || tokens.some((t: string) => t.includes('genitourinary'));
+      }
+      if (lowerTarget === 'ent') {
+        if (itemSystemText.includes('integumentary')) return false;
+        return tokens.some((t: string) => 
+          t.includes('ent') || t.includes('otic') || t.includes('ocular') || t.includes('ophthalm') || t.includes('otolaryngology') || t.includes('special senses')
+        );
+      }
+      return itemSystemText.includes(lowerTarget);
+    });
+  };
+
+  const matchesTermFilter = (item: any, filters: string[]) => {
+    if (filters.includes('All')) return true;
+    return filters.includes(item.didactic_term);
   };
 
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
-    
     const tags = text.split(',').map((t: string) => t.trim());
     const mappedTags = new Set<string>();
 
@@ -151,12 +158,7 @@ function SystemsContent() {
       } else if (lower === 'gu' || lower === 'genitourinary') {
         mappedTags.add('Genitourinary');
       } else if (
-        lower.includes('otic') || 
-        lower.includes('ocular') || 
-        lower.includes('ophthalm') || 
-        lower.includes('ent') || 
-        lower.includes('otolaryngology') ||
-        lower.includes('special senses')
+        lower.includes('otic') || lower.includes('ocular') || lower.includes('ophthalm') || lower.includes('ent') || lower.includes('otolaryngology') || lower.includes('special senses')
       ) {
         mappedTags.add('ENT');
       } else {
@@ -170,8 +172,9 @@ function SystemsContent() {
 
   const filtered = items.filter(item => {
     const matchesSection = (item.section || 'Pharmacology') === activeSection;
-    const matchesSystem = selectedSystem === 'All' || matchesSystemFilter(item, selectedSystem);
-    return matchesSection && matchesSystem;
+    const matchesSys = matchesSystemFilter(item, selectedSystems);
+    const matchesTrm = matchesTermFilter(item, selectedTerms);
+    return matchesSection && matchesSys && matchesTrm;
   });
 
   const backLink = activeSection === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
@@ -216,52 +219,104 @@ function SystemsContent() {
             {activeSection === 'Clinical Medicine' ? 'Clinical Disease Systems' : 'Pharmacology Drug Systems'}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            {activeSection === 'Clinical Medicine' ? 'Browse all medical conditions and diseases categorized by organ system.' : 'Browse all medications categorized by organ system.'}
+            Select multiple body systems and terms simultaneously to filter your review list.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {primarySystems.map((sys) => (
+        {/* Multi-Select Systems Filter */}
+        <div className="space-y-2 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Filter by Body Systems (Multi-select)</span>
+          <div className="flex flex-wrap gap-2 pt-1">
             <button
-              key={sys}
-              onClick={() => handleSelectSystem(sys)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
-                selectedSystem === sys
-                  ? `${activeSection === 'Clinical Medicine' ? 'bg-emerald-600 shadow-emerald-200' : 'bg-blue-600 shadow-blue-200'} text-white`
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              onClick={() => toggleSystem('All')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer inline-flex items-center gap-1.5 ${
+                selectedSystems.includes('All')
+                  ? `${activeSection === 'Clinical Medicine' ? 'bg-emerald-600' : 'bg-blue-600'} text-white`
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              {sys}
+              {selectedSystems.includes('All') && <Check className="w-3.5 h-3.5" />} All Systems
             </button>
-          ))}
+            {primarySystems.map((sys) => {
+              const isSelected = selectedSystems.includes(sys);
+              return (
+                <button
+                  key={sys}
+                  onClick={() => toggleSystem(sys)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer inline-flex items-center gap-1.5 ${
+                    isSelected
+                      ? `${activeSection === 'Clinical Medicine' ? 'bg-emerald-600' : 'bg-blue-600'} text-white`
+                      : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3.5 h-3.5" />} {sys}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Multi-Select Terms Filter */}
+        <div className="space-y-2 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Filter by Didactic Term (Multi-select)</span>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              onClick={() => toggleTerm('All')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer inline-flex items-center gap-1.5 ${
+                selectedTerms.includes('All')
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {selectedTerms.includes('All') && <Check className="w-3.5 h-3.5" />} All Terms
+            </button>
+            {didacticTerms.map((term) => {
+              const isSelected = selectedTerms.includes(term);
+              return (
+                <button
+                  key={term}
+                  onClick={() => toggleTerm(term)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer inline-flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3.5 h-3.5" />} {term}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {loading ? (
           <div className="text-center py-12 text-slate-400">Loading systems...</div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 shadow-sm">
-            No {activeSection === 'Clinical Medicine' ? 'diseases' : 'drugs'} found for this body system.
+            No {activeSection === 'Clinical Medicine' ? 'diseases' : 'drugs'} found matching these selected filters.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filtered.map((item) => (
               <Link 
                 key={item.id} 
-                href={`/view/${item.id}?from=systems&system=${encodeURIComponent(selectedSystem)}&section=${encodeURIComponent(activeSection)}`} 
+                href={`/view/${item.id}?from=systems&section=${encodeURIComponent(activeSection)}`} 
                 className={`bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex items-center justify-between group cursor-pointer ${
                   activeSection === 'Clinical Medicine' ? 'hover:border-emerald-300' : 'hover:border-blue-300'
                 }`}
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">
-                      {item.section || 'General'}
-                    </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border ${
                       activeSection === 'Clinical Medicine' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'
                     }`}>
                       {formatBodySystemDisplay(item.body_systems)}
                     </span>
+                    {item.didactic_term && (
+                      <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-semibold border border-indigo-100">
+                        {item.didactic_term}
+                      </span>
+                    )}
                   </div>
                   <h3 className={`text-base font-bold text-slate-900 transition ${
                     activeSection === 'Clinical Medicine' ? 'group-hover:text-emerald-600' : 'group-hover:text-blue-600'
