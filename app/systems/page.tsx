@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Layers, ChevronRight, Home, Check } from 'lucide-react';
+import { ArrowLeft, Layers, ChevronRight, Home, Check, Search } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +20,7 @@ function SystemsContent() {
   // Use sets or arrays for multi-select states
   const [selectedSystems, setSelectedSystems] = useState<string[]>(['All']);
   const [selectedTerms, setSelectedTerms] = useState<string[]>(['All']);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState(initialSection);
 
   useEffect(() => {
@@ -174,7 +175,15 @@ function SystemsContent() {
     const matchesSection = (item.section || 'Pharmacology') === activeSection;
     const matchesSys = matchesSystemFilter(item, selectedSystems);
     const matchesTrm = matchesTermFilter(item, selectedTerms);
-    return matchesSection && matchesSys && matchesTrm;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch = 
+      !query ||
+      item.generic_name?.toLowerCase().includes(query) ||
+      item.brand_names?.toLowerCase().includes(query) ||
+      item.drug_class?.toLowerCase().includes(query);
+
+    return matchesSection && matchesSys && matchesTrm && matchesSearch;
   });
 
   const backLink = activeSection === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
@@ -289,11 +298,23 @@ function SystemsContent() {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, brand, or class within selected filters..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          />
+        </div>
+
         {loading ? (
           <div className="text-center py-12 text-slate-400">Loading systems...</div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 shadow-sm">
-            No {activeSection === 'Clinical Medicine' ? 'diseases' : 'drugs'} found matching these selected filters.
+            No {activeSection === 'Clinical Medicine' ? 'diseases' : 'drugs'} found matching these selected filters and search query.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
