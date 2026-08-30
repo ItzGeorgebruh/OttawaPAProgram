@@ -256,18 +256,12 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Quick Add Buttons pointing to the admin route */}
+            {/* Single Combined Add New Button */}
             <Link 
-              href="/admin?section=Pharmacology" 
-              className="inline-flex items-center gap-1.5 text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-2 rounded-xl border border-blue-200 transition shadow-sm"
+              href="/admin" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 px-3.5 py-2 rounded-xl transition shadow-sm"
             >
-              <PlusCircle className="w-4 h-4" /> Add Drug
-            </Link>
-            <Link 
-              href="/admin?section=Clinical%20Medicine" 
-              className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-2 rounded-xl border border-emerald-200 transition shadow-sm"
-            >
-              <PlusCircle className="w-4 h-4" /> Add Disease
+              <PlusCircle className="w-4 h-4" /> Add New Record
             </Link>
 
             <button
