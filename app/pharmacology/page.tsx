@@ -30,13 +30,11 @@ export default function PharmacologyPage() {
   const filtered = items.filter((item) => {
     const query = searchQuery.toLowerCase().trim();
     
-    // Check standard search fields (name, brand, or class)
     let matchesSearch =
       item.generic_name?.toLowerCase().includes(query) ||
       item.brand_names?.toLowerCase().includes(query) ||
       item.drug_class?.toLowerCase().includes(query);
 
-    // Intelligent catch-all groupings for Antimicrobials
     if (query === 'antibiotic' || query === 'antibiotics') {
       const antibioticClasses = [
         'penicillin', 'cephalosporin', 'macrolide', 'fluoroquinolone', 
@@ -108,7 +106,6 @@ export default function PharmacologyPage() {
     };
   };
 
-  // Clean up body system display to omit metabolic and standardize GI/GU
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
@@ -156,6 +153,7 @@ export default function PharmacologyPage() {
           <p className="text-sm text-slate-500 mt-1">Manage and view all recorded medications by term.</p>
         </div>
 
+        {/* Search Bar & Filter Row */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />

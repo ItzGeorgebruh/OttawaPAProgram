@@ -36,7 +36,6 @@ export default function ClinicalPage() {
     return matchesSearch && matchesTerm;
   });
 
-  // Automatically map tags while strictly protecting Integumentary first
   const formatBodySystemDisplay = (text: string) => {
     if (!text) return 'General';
     
@@ -47,7 +46,6 @@ export default function ClinicalPage() {
       const lower = tag.toLowerCase();
       if (lower === 'metabolic') return;
       
-      // Strict priority check for Integumentary so it never falls into ENT
       if (lower.includes('integumentary')) {
         mappedTags.add('Integumentary');
       } else if (lower === 'gi' || lower === 'gastrointestinal') {
@@ -96,6 +94,7 @@ export default function ClinicalPage() {
           <p className="text-sm text-slate-500 mt-1">Manage and view all recorded disease processes by term.</p>
         </div>
 
+        {/* Search Bar & Filter Row */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
