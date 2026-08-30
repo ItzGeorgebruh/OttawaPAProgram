@@ -116,15 +116,15 @@ function SystemsContent() {
 
     return filters.some(target => {
       const lowerTarget = target.toLowerCase();
-      
-      // Direct substring match
       if (itemSystemText.includes(lowerTarget)) return true;
 
-      // Special handle common abbreviations/aliases
       if (lowerTarget === 'gastrointestinal' && (itemSystemText.includes('gi') || itemSystemText.includes('gastrointestinal'))) {
         return true;
       }
       if (lowerTarget === 'genitourinary' && (itemSystemText.includes('gu') || itemSystemText.includes('genitourinary'))) {
+        return true;
+      }
+      if (lowerTarget === 'neurology' && (itemSystemText.includes('neurology') || itemSystemText.includes('nervous'))) {
         return true;
       }
       if (lowerTarget === 'ent') {
@@ -183,15 +183,12 @@ function SystemsContent() {
 
     const query = searchQuery.toLowerCase().trim();
     
-    // If the user is searching, let the search query drive results globally within the section
+    // Universal search across all columns in the database row
     if (query) {
-      return (
-        matchesSection &&
-        (item.generic_name?.toLowerCase().includes(query) ||
-         item.brand_names?.toLowerCase().includes(query) ||
-         item.drug_class?.toLowerCase().includes(query) ||
-         item.body_systems?.toLowerCase().includes(query))
+      const matchesAnyField = Object.values(item).some(val => 
+        typeof val === 'string' && val.toLowerCase().includes(query)
       );
+      return matchesSection && matchesAnyField;
     }
 
     const matchesSys = matchesSystemFilter(item, selectedSystems);
@@ -317,7 +314,7 @@ function SystemsContent() {
           <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by name, brand, or class within selected filters..."
+            placeholder="Search across all fields..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
