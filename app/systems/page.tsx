@@ -17,7 +17,6 @@ function SystemsContent() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Use sets or arrays for multi-select states
   const [selectedSystems, setSelectedSystems] = useState<string[]>(['All']);
   const [selectedTerms, setSelectedTerms] = useState<string[]>(['All']);
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,6 +127,9 @@ function SystemsContent() {
       if (lowerTarget === 'genitourinary') {
         return tokens.includes('gu') || tokens.some((t: string) => t.includes('genitourinary'));
       }
+      if (lowerTarget === 'neurology') {
+        return itemSystemText.includes('neurology') || itemSystemText.includes('nervous');
+      }
       if (lowerTarget === 'ent') {
         if (itemSystemText.includes('integumentary')) return false;
         return tokens.some((t: string) => 
@@ -140,7 +142,8 @@ function SystemsContent() {
 
   const matchesTermFilter = (item: any, filters: string[]) => {
     if (filters.includes('All')) return true;
-    return filters.includes(item.didactic_term);
+    const itemTerm = (item.didactic_term || '').trim().toLowerCase();
+    return filters.some(f => f.trim().toLowerCase() === itemTerm);
   };
 
   const formatBodySystemDisplay = (text: string) => {
@@ -172,7 +175,10 @@ function SystemsContent() {
   };
 
   const filtered = items.filter(item => {
-    const matchesSection = (item.section || 'Pharmacology') === activeSection;
+    const itemSection = (item.section || '').trim().toLowerCase();
+    const currentSection = activeSection.trim().toLowerCase();
+    const matchesSection = itemSection === currentSection;
+
     const matchesSys = matchesSystemFilter(item, selectedSystems);
     const matchesTrm = matchesTermFilter(item, selectedTerms);
     
