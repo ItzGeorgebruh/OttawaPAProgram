@@ -111,26 +111,28 @@ function SystemsContent() {
 
   const matchesSystemFilter = (item: any, filters: string[]) => {
     if (filters.includes('All')) return true;
-    const itemSystemText = (item.body_systems || '').toLowerCase();
+    
+    const itemSystems = (item.body_systems || '')
+      .toLowerCase()
+      .split(',')
+      .map((s: string) => s.trim());
 
     return filters.some(target => {
       const lowerTarget = target.toLowerCase();
       
-      // Flexible matching: check if the item's system text includes the target keyword anywhere
-      if (itemSystemText.includes(lowerTarget)) return true;
+      if (itemSystems.includes(lowerTarget)) return true;
 
-      // Special handle aliases/mappings
-      if (lowerTarget === 'gastrointestinal' && (itemSystemText.includes('gi') || itemSystemText.includes('gastrointestinal'))) {
+      if (lowerTarget === 'gastrointestinal' && itemSystems.some((s: string) => s.includes('gi') || s.includes('gastrointestinal'))) {
         return true;
       }
-      if (lowerTarget === 'genitourinary' && (itemSystemText.includes('gu') || itemSystemText.includes('genitourinary'))) {
+      if (lowerTarget === 'genitourinary' && itemSystems.some((s: string) => s.includes('gu') || s.includes('genitourinary'))) {
         return true;
       }
-      if (lowerTarget === 'neurology' && (itemSystemText.includes('neurology') || itemSystemText.includes('nervous'))) {
+      if (lowerTarget === 'neurology' && itemSystems.some((s: string) => s.includes('neurology') || s.includes('nervous'))) {
         return true;
       }
       if (lowerTarget === 'ent') {
-        return itemSystemText.includes('ent') || itemSystemText.includes('otic') || itemSystemText.includes('ocular') || itemSystemText.includes('ophthalm') || itemSystemText.includes('otolaryngology') || itemSystemText.includes('special senses');
+        return itemSystems.some((s: string) => s.includes('ent') || s.includes('otic') || s.includes('ocular') || s.includes('ophthalm') || s.includes('otolaryngology') || s.includes('special senses'));
       }
 
       return false;
@@ -176,17 +178,23 @@ function SystemsContent() {
     const currentSection = activeSection.trim().toLowerCase();
     const matchesSection = itemSection === currentSection;
 
+    const query = searchQuery.toLowerCase().trim();
+    
+    // If user is searching, let the query drive results globally within the section
+    if (query) {
+      return (
+        matchesSection &&
+        (item.generic_name?.toLowerCase().includes(query) ||
+         item.brand_names?.toLowerCase().includes(query) ||
+         item.drug_class?.toLowerCase().includes(query) ||
+         item.body_systems?.toLowerCase().includes(query))
+      );
+    }
+
     const matchesSys = matchesSystemFilter(item, selectedSystems);
     const matchesTrm = matchesTermFilter(item, selectedTerms);
-    
-    const query = searchQuery.toLowerCase().trim();
-    const matchesSearch = 
-      !query ||
-      item.generic_name?.toLowerCase().includes(query) ||
-      item.brand_names?.toLowerCase().includes(query) ||
-      item.drug_class?.toLowerCase().includes(query);
 
-    return matchesSection && matchesSys && matchesTrm && matchesSearch;
+    return matchesSection && matchesSys && matchesTrm;
   });
 
   const backLink = activeSection === 'Clinical Medicine' ? '/clinical' : '/pharmacology';
