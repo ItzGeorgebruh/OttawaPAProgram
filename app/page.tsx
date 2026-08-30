@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
-import { Search, BookOpen, Layers, PlusCircle, Star } from 'lucide-react';
+import { Search, BookOpen, Star } from 'lucide-react';
 
 export default function MainPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,14 +13,11 @@ export default function MainPage() {
 
   useEffect(() => {
     fetchRecords();
-    // Load local favorites from browser storage
     const savedFavs = localStorage.getItem('pa_app_favorites');
     if (savedFavs) {
       try {
         setFavorites(JSON.parse(savedFavs));
-      } catch (e) {
-        // ignore parsing error
-      }
+      } catch (e) {}
     }
   }, []);
 
@@ -103,7 +100,7 @@ export default function MainPage() {
           </div>
         )}
 
-        {/* Main Navigation Hub Grid */}
+        {/* Main Navigation Hub Grid (Pharmacology & Clinical Medicine Only) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link
             href="/pharmacology"
@@ -132,36 +129,6 @@ export default function MainPage() {
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               Browse medical conditions, pathophysiology, etiology, diagnosis, and evidence-based treatments.
-            </p>
-          </Link>
-
-          <Link
-            href="/systems"
-            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition space-y-3 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-              <Layers className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition">
-              Systems & Term Filter
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Multi-select organ systems and didactic terms to filter high-yield blocks instantly.
-            </p>
-          </Link>
-
-          <Link
-            href="/admin?folder=Pharmacology"
-            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-purple-300 transition space-y-3 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-              <PlusCircle className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-purple-600 transition">
-              Add New Entry
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Create a new study entry manually or use AI Auto-Fill to populate standard board fields.
             </p>
           </Link>
         </div>
