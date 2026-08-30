@@ -4,7 +4,7 @@ import React, { useEffect, useState, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Edit, Trash2, ExternalLink, Home } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,13 +74,38 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
   const [record, setRecord] = useState<any>(null);
   const [allDrugs, setAllDrugs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isStarred, setIsStarred] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchRecord();
       fetchAllDrugs();
+
+      // Load star status from local browser storage
+      const savedFavs = localStorage.getItem('pa_app_favorites');
+      if (savedFavs) {
+        try {
+          const favs = JSON.parse(savedFavs);
+          setIsStarred(favs.includes(id));
+        } catch (e) {}
+      }
     }
   }, [id]);
+
+  const toggleFavorite = () => {
+    if (!id) return;
+    const savedFavs = localStorage.getItem('pa_app_favorites');
+    let favs: string[] = savedFavs ? JSON.parse(savedFavs) : [];
+    
+    if (favs.includes(id)) {
+      favs = favs.filter(favId => favId !== id);
+      setIsStarred(false);
+    } else {
+      favs.push(id);
+      setIsStarred(true);
+    }
+    localStorage.setItem('pa_app_favorites', JSON.stringify(favs));
+  };
 
   const fetchRecord = async () => {
     const { data, error } = await supabase
@@ -234,6 +259,19 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Star Favorite Button */}
+            <button
+              onClick={toggleFavorite}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition shadow-sm cursor-pointer ${
+                isStarred 
+                  ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Star className={`w-4 h-4 ${isStarred ? 'fill-amber-500 text-amber-500' : ''}`} />
+              {isStarred ? 'Starred' : 'Star'}
+            </button>
+
             <Link href={`/edit/${id}`} className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
               <Edit className="w-4 h-4" /> Edit
             </Link>
