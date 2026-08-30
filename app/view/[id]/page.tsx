@@ -4,7 +4,7 @@ import React, { useEffect, useState, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star, PlusCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -180,18 +180,15 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
       }
     } catch (e) {}
 
-    // Strictly match only true single generic names (ignoring rows with commas or plus signs)
     const matchedDrugs = allDrugs.filter(drug => {
       if (!drug.generic_name) return false;
       const name = drug.generic_name.trim();
       
-      // Reject grouped or combo rows that have commas or plus signs
       if (name.includes(',') || name.includes('+')) return false;
       
       const lowerName = name.toLowerCase();
-      if (lowerName.length < 4) return false; // Ignore very short names to prevent false triggers
+      if (lowerName.length < 4) return false;
 
-      // Enforce strict word boundary matching
       const regex = new RegExp(`\\b${lowerName}\\b`, 'i');
       return regex.test(plainText);
     });
@@ -247,8 +244,9 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-3xl mx-auto space-y-6">
         
+        {/* Top Header Navigation & Quick Action Tabs */}
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
               <ArrowLeft className="w-4 h-4" /> {backText}
             </Link>
@@ -257,10 +255,24 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             </Link>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Quick Add Buttons */}
+            <Link 
+              href="/add?section=Pharmacology" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-2 rounded-xl border border-blue-200 transition shadow-sm"
+            >
+              <PlusCircle className="w-4 h-4" /> Add Drug
+            </Link>
+            <Link 
+              href="/add?section=Clinical%20Medicine" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-2 rounded-xl border border-emerald-200 transition shadow-sm"
+            >
+              <PlusCircle className="w-4 h-4" /> Add Disease
+            </Link>
+
             <button
               onClick={toggleFavorite}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition shadow-sm cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition shadow-sm cursor-pointer ${
                 isStarred 
                   ? 'bg-amber-50 text-amber-700 border-amber-200' 
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -270,10 +282,10 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
               {isStarred ? 'Starred' : 'Star'}
             </button>
 
-            <Link href={`/edit/${id}`} className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+            <Link href={`/edit/${id}`} className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition shadow-sm">
               <Edit className="w-4 h-4" /> Edit
             </Link>
-            <button onClick={handleDelete} className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 border border-rose-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-rose-100 transition shadow-sm cursor-pointer">
+            <button onClick={handleDelete} className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-600 border border-rose-200 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-rose-100 transition shadow-sm cursor-pointer">
               <Trash2 className="w-4 h-4" /> Delete
             </button>
           </div>
@@ -294,6 +306,7 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
               {record.drug_class || 'Unclassified'}
             </span>
+
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{record.generic_name}</h1>
           {record.brand_names && (
