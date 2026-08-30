@@ -112,27 +112,30 @@ function SystemsContent() {
   const matchesSystemFilter = (item: any, filters: string[]) => {
     if (filters.includes('All')) return true;
     
-    const itemSystems = (item.body_systems || '')
-      .toLowerCase()
-      .split(',')
-      .map((s: string) => s.trim());
+    const itemSystemText = (item.body_systems || '').toLowerCase();
 
     return filters.some(target => {
       const lowerTarget = target.toLowerCase();
       
-      if (itemSystems.includes(lowerTarget)) return true;
+      // Direct substring match
+      if (itemSystemText.includes(lowerTarget)) return true;
 
-      if (lowerTarget === 'gastrointestinal' && itemSystems.some((s: string) => s.includes('gi') || s.includes('gastrointestinal'))) {
+      // Special handle common abbreviations/aliases
+      if (lowerTarget === 'gastrointestinal' && (itemSystemText.includes('gi') || itemSystemText.includes('gastrointestinal'))) {
         return true;
       }
-      if (lowerTarget === 'genitourinary' && itemSystems.some((s: string) => s.includes('gu') || s.includes('genitourinary'))) {
-        return true;
-      }
-      if (lowerTarget === 'neurology' && itemSystems.some((s: string) => s.includes('neurology') || s.includes('nervous'))) {
+      if (lowerTarget === 'genitourinary' && (itemSystemText.includes('gu') || itemSystemText.includes('genitourinary'))) {
         return true;
       }
       if (lowerTarget === 'ent') {
-        return itemSystems.some((s: string) => s.includes('ent') || s.includes('otic') || s.includes('ocular') || s.includes('ophthalm') || s.includes('otolaryngology') || s.includes('special senses'));
+        return (
+          itemSystemText.includes('ent') || 
+          itemSystemText.includes('otic') || 
+          itemSystemText.includes('ocular') || 
+          itemSystemText.includes('ophthalm') || 
+          itemSystemText.includes('otolaryngology') || 
+          itemSystemText.includes('special senses')
+        );
       }
 
       return false;
@@ -180,7 +183,7 @@ function SystemsContent() {
 
     const query = searchQuery.toLowerCase().trim();
     
-    // If user is searching, let the query drive results globally within the section
+    // If the user is searching, let the search query drive results globally within the section
     if (query) {
       return (
         matchesSection &&
