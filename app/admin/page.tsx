@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Sparkles, AlertCircle, Check, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, AlertCircle, Check, Image as ImageIcon, Link2, Search } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +36,10 @@ function AdminForm() {
   const [generating, setGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // State for manual drug linking and its search query
+  const [pharmDrugs, setPharmDrugs] = useState<any[]>([]);
+  const [drugSearchQuery, setDrugSearchQuery] = useState('');
+
   const [form, setForm] = useState({
     section: defaultFolder,
     didactic_term: 'Term 1',
@@ -58,7 +62,21 @@ function AdminForm() {
     complications: '',
     image_url: '',
     notes: '',
+    linked_meds: [] as string[], // Array of pharmacology record IDs
   });
+
+  // Fetch all pharmacology records on mount so we can link them
+  useEffect(() => {
+    async function fetchPharm() {
+      const { data } = await supabase
+        .from('drugs')
+        .select('id, generic_name, drug_class')
+        .eq('section', 'Pharmacology')
+        .order('generic_name', { ascending: true });
+      if (data) setPharmDrugs(data);
+    }
+    fetchPharm();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -82,6 +100,29 @@ function AdminForm() {
       body_systems: updatedSystems.join(', ')
     });
   };
+
+  // Toggle manual drug linkage
+  const toggleLinkedDrug = (drugId: string) => {
+    const currentLinked = form.linked_meds || [];
+    let updatedLinked: string[];
+
+    if (currentLinked.includes(drugId)) {
+      updatedLinked = currentLinked.filter(id => id !== drugId);
+    } else {
+      updatedLinked = [...currentLinked, drugId];
+    }
+
+    setForm({
+      ...form,
+      linked_meds: updatedLinked
+    });
+  };
+
+  // Filter pharmacology drugs based on the search query input
+  const filteredPharmDrugs = pharmDrugs.filter(drug => 
+    drug.generic_name.toLowerCase().includes(drugSearchQuery.toLowerCase()) ||
+    (drug.drug_class && drug.drug_class.toLowerCase().includes(drugSearchQuery.toLowerCase()))
+  );
 
   const handleAIFill = async () => {
     if (!form.generic_name) {
@@ -134,7 +175,7 @@ function AdminForm() {
     setSaving(true);
     setErrorMsg('');
 
-    // Insert record and request the newly created row back with its ID
+    // Insert record including linked_meds array and request the newly created row back
     const { data, error } = await supabase
       .from('drugs')
       .insert([form])
@@ -146,7 +187,6 @@ function AdminForm() {
       setErrorMsg(error.message);
       setSaving(false);
     } else if (data && data.id) {
-      // Instantly redirect to the new item's detail view page
       router.push(`/view/${data.id}`);
       router.refresh();
     } else {
@@ -310,15 +350,52 @@ function AdminForm() {
                 );
               })}
             </div>
-            <input
-              type="text"
-              name="body_systems"
-              value={form.body_systems}
-              onChange={handleChange}
-              placeholder="Or type custom comma-separated systems..."
-              className="w-full mt-2 px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            />
           </div>
+
+          {/* MANUAL DRUG LINKING SECTION WITH SEARCH */}
+          {isClinical && (
+            <div className="space-y-3 pt-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <Link2 className="w-4 h-4 text-emerald-600" /> Manually Link Pharmacology Medications
+              </label>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search medications to link..."
+                  value={drugSearchQuery}
+                  onChange={(e) => setDrugSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              
+              {filteredPharmDrugs.length === 0 ? (
+                <div className="p-4 bg-slate-50 text-slate-400 text-xs rounded-xl border border-slate-200">No matching drugs found.</div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                  {filteredPharmDrugs.map((drug) => {
+                    const isLinked = form.linked_meds.includes(drug.id);
+                    return (
+                      <button
+                        key={drug.id}
+                        type="button"
+                        onClick={() => toggleLinkedDrug(drug.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                          isLinked
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {isLinked && <Check className="w-3 h-3" />}
+                        {drug.generic_name} {drug.drug_class ? `(${drug.drug_class})` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* IMAGE URL INPUT */}
           <div>

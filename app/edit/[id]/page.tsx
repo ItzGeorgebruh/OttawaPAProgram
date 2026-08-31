@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState, use, Suspense } from 'react';
+import React, { useState, useEffect, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, AlertCircle, Check, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Check, Image as ImageIcon, Link2, Search } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +36,10 @@ function EditForm({ params }: { params: Promise<{ id: string }> }) {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // State for manual drug linking and search filter
+  const [pharmDrugs, setPharmDrugs] = useState<any[]>([]);
+  const [drugSearchQuery, setDrugSearchQuery] = useState('');
+
   const [form, setForm] = useState({
     section: 'Pharmacology',
     didactic_term: 'Term 1',
@@ -58,16 +62,27 @@ function EditForm({ params }: { params: Promise<{ id: string }> }) {
     complications: '',
     image_url: '',
     notes: '',
+    linked_meds: [] as string[],
   });
 
   useEffect(() => {
     if (id) {
-      fetchRecord();
+      fetchRecordAndDrugs();
     }
   }, [id]);
 
-  const fetchRecord = async () => {
+  const fetchRecordAndDrugs = async () => {
     setLoading(true);
+
+    // Fetch pharmacology drugs available for linking
+    const { data: pharmData } = await supabase
+      .from('drugs')
+      .select('id, generic_name, drug_class')
+      .eq('section', 'Pharmacology')
+      .order('generic_name', { ascending: true });
+    if (pharmData) setPharmDrugs(pharmData);
+
+    // Fetch existing record
     const { data, error } = await supabase
       .from('drugs')
       .select('*')
@@ -99,6 +114,7 @@ function EditForm({ params }: { params: Promise<{ id: string }> }) {
         complications: data.complications || '',
         image_url: data.image_url || '',
         notes: data.notes || '',
+        linked_meds: data.linked_meds || [],
       });
     }
     setLoading(false);
@@ -125,6 +141,28 @@ function EditForm({ params }: { params: Promise<{ id: string }> }) {
       body_systems: updatedSystems.join(', ')
     });
   };
+
+  const toggleLinkedDrug = (drugId: string) => {
+    const currentLinked = form.linked_meds || [];
+    let updatedLinked: string[];
+
+    if (currentLinked.includes(drugId)) {
+      updatedLinked = currentLinked.filter(id => id !== drugId);
+    } else {
+      updatedLinked = [...currentLinked, drugId];
+    }
+
+    setForm({
+      ...form,
+      linked_meds: updatedLinked
+    });
+  };
+
+  // Filter pharmacology options dynamically as you type
+  const filteredPharmDrugs = pharmDrugs.filter(drug => 
+    drug.generic_name.toLowerCase().includes(drugSearchQuery.toLowerCase()) ||
+    (drug.drug_class && drug.drug_class.toLowerCase().includes(drugSearchQuery.toLowerCase()))
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,6 +337,51 @@ function EditForm({ params }: { params: Promise<{ id: string }> }) {
               className="w-full mt-2 px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             />
           </div>
+
+          {/* MANUAL DRUG LINKING SECTION WITH SEARCH */}
+          {isClinical && (
+            <div className="space-y-3 pt-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <Link2 className="w-4 h-4 text-emerald-600" /> Manually Link Pharmacology Medications
+              </label>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search medications to link..."
+                  value={drugSearchQuery}
+                  onChange={(e) => setDrugSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              
+              {filteredPharmDrugs.length === 0 ? (
+                <div className="p-4 bg-slate-50 text-slate-400 text-xs rounded-xl border border-slate-200">No matching drugs found.</div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                  {filteredPharmDrugs.map((drug) => {
+                    const isLinked = (form.linked_meds || []).includes(drug.id);
+                    return (
+                      <button
+                        key={drug.id}
+                        type="button"
+                        onClick={() => toggleLinkedDrug(drug.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                          isLinked
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {isLinked && <Check className="w-3 h-3" />}
+                        {drug.generic_name} {drug.drug_class ? `(${drug.drug_class})` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* IMAGE URL INPUT */}
           <div>

@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ExternalLink, Home, Star, PlusCircle, Image as ImageIcon, Link2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +71,7 @@ function ViewMedicationContent({ id }: { id: string }) {
 
   const [record, setRecord] = useState<any>(null);
   const [allDrugs, setAllDrugs] = useState<any[]>([]);
+  const [manuallyLinkedDrugs, setManuallyLinkedDrugs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isStarred, setIsStarred] = useState(false);
 
@@ -111,7 +112,19 @@ function ViewMedicationContent({ id }: { id: string }) {
       .eq('id', id)
       .single();
 
-    if (!error) setRecord(data);
+    if (!error && data) {
+      setRecord(data);
+
+      // If there are manually linked drug IDs, fetch their details
+      if (data.linked_meds && data.linked_meds.length > 0) {
+        const { data: linkedData } = await supabase
+          .from('drugs')
+          .select('id, generic_name, drug_class')
+          .in('id', data.linked_meds);
+        
+        if (linkedData) setManuallyLinkedDrugs(linkedData);
+      }
+    }
     setLoading(false);
   };
 
@@ -169,9 +182,9 @@ function ViewMedicationContent({ id }: { id: string }) {
   };
 
   const renderClickableTreatment = (text: string) => {
-    if (!text) return <span className="text-slate-400">None specified</span>;
-    
-    let plainText = text;
+    if (!text && manuallyLinkedDrugs.length === 0) return <span className="text-slate-400">None specified</span>;
+
+    let plainText = text || '';
     try {
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed)) {
@@ -192,25 +205,47 @@ function ViewMedicationContent({ id }: { id: string }) {
       return regex.test(plainText);
     });
 
-    if (matchedDrugs.length === 0) {
-      return formatTextAsBullets(text);
-    }
+    // Combine manual links and auto-detected links (filtering out duplicates by ID)
+    const manualIds = new Set(manuallyLinkedDrugs.map(d => d.id));
+    const uniqueAutoDrugs = matchedDrugs.filter(d => !manualIds.has(d.id));
 
     return (
       <div className="space-y-3">
-        {formatTextAsBullets(text)}
-        <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Linked Pharmacology:</span>
-          {matchedDrugs.map(drug => (
-            <Link
-              key={drug.id}
-              href={`/view/${drug.id}`}
-              className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3 py-1 rounded-lg text-xs font-semibold transition"
-            >
-              {drug.generic_name} <ExternalLink className="w-3 h-3" />
-            </Link>
-          ))}
-        </div>
+        {text ? formatTextAsBullets(text) : <span className="text-slate-400">None specified</span>}
+
+        {/* Manually Linked Drugs */}
+        {manuallyLinkedDrugs.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1">
+              <Link2 className="w-3.5 h-3.5" /> Hand-Picked Medications:
+            </span>
+            {manuallyLinkedDrugs.map(drug => (
+              <Link
+                key={drug.id}
+                href={`/view/${drug.id}`}
+                className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-1 rounded-lg text-xs font-semibold transition"
+              >
+                {drug.generic_name} <ExternalLink className="w-3 h-3" />
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Auto-Detected Drugs */}
+        {uniqueAutoDrugs.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Auto-Detected Pharmacology:</span>
+            {uniqueAutoDrugs.map(drug => (
+              <Link
+                key={drug.id}
+                href={`/view/${drug.id}`}
+                className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3 py-1 rounded-lg text-xs font-semibold transition"
+              >
+                {drug.generic_name} <ExternalLink className="w-3 h-3" />
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
