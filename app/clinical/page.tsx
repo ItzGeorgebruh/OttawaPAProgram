@@ -1,15 +1,22 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Plus, Search, ArrowLeft, Stethoscope, ChevronRight, Filter, Layers } from 'lucide-react';
 
-export default function ClinicalPage() {
+export const dynamic = 'force-dynamic';
+
+function ClinicalDashboard() {
+  const searchParams = useSearchParams();
+  
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTerm, setSelectedTerm] = useState('All');
+  
+  // Initialize state from URL params if returning from a detail page
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [selectedTerm, setSelectedTerm] = useState(searchParams.get('term') || 'All');
 
   useEffect(() => {
     fetchDiseases();
@@ -132,36 +139,55 @@ export default function ClinicalPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filtered.map((item) => (
-              <Link 
-                key={item.id} 
-                href={`/view/${item.id}?from=systems&section=Clinical%20Medicine`} 
-                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition flex items-center justify-between group cursor-pointer"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-semibold border border-emerald-100">
-                      {formatBodySystemDisplay(item.body_systems)}
-                    </span>
-                    {item.didactic_term && (
-                      <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-semibold border border-indigo-100">
-                        {item.didactic_term}
+            {filtered.map((item) => {
+              // Construct URL that preserves search and selected term parameters
+              const queryParams = new URLSearchParams();
+              queryParams.set('from', 'clinical');
+              queryParams.set('section', 'Clinical Medicine');
+              if (searchQuery) queryParams.set('search', searchQuery);
+              if (selectedTerm !== 'All') queryParams.set('term', selectedTerm);
+
+              const detailUrl = `/view/${item.id}?${queryParams.toString()}`;
+
+              return (
+                <Link 
+                  key={item.id} 
+                  href={detailUrl} 
+                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition flex items-center justify-between group cursor-pointer"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-semibold border border-emerald-100">
+                        {formatBodySystemDisplay(item.body_systems)}
                       </span>
-                    )}
+                      {item.didactic_term && (
+                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md font-semibold border border-indigo-100">
+                          {item.didactic_term}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition">
+                      {item.generic_name}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Subtype: {item.brand_names || 'General'}
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition">
-                    {item.generic_name}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Subtype: {item.brand_names || 'General'}
-                  </p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 transition" />
-              </Link>
-            ))}
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 transition" />
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function ClinicalPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading...</div>}>
+      <ClinicalDashboard />
+    </Suspense>
   );
 }

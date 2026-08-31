@@ -1,54 +1,54 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
-import { Search, BookOpen, Star } from 'lucide-react';
+import { Search, BookOpen, Stethoscope, PlusCircle, Star, ChevronRight } from 'lucide-react';
 
-export default function MainPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [allRecords, setAllRecords] = useState<any[]>([]);
-  const [favorites, setFavorites] = useState<string[]>([]);
+export const dynamic = 'force-dynamic';
+
+function MainDashboard() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [starredIds, setStarredIds] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    fetchRecords();
+    setMounted(true);
     const savedFavs = localStorage.getItem('pa_app_favorites');
     if (savedFavs) {
-      try {
-        setFavorites(JSON.parse(savedFavs));
-      } catch (e) {}
+      try { setStarredIds(JSON.parse(savedFavs)); } catch (e) {}
     }
+    fetchRecords();
   }, []);
 
   const fetchRecords = async () => {
-    setLoading(false);
-    const { data } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from('drugs')
-      .select('id, generic_name, section, body_systems, drug_class')
-      .order('generic_name', { ascending: true });
+      .select('id, generic_name, brand_names, drug_class, section, body_systems');
 
-    if (data) setAllRecords(data);
+    if (!error && data) setRecords(data);
+    setLoading(false);
   };
 
-  const filteredRecords = searchTerm.trim() === '' ? [] : allRecords.filter(item => {
-    const query = searchTerm.toLowerCase();
+  const filteredRecords = records.filter(record => {
     return (
-      item.generic_name?.toLowerCase().includes(query) ||
-      item.drug_class?.toLowerCase().includes(query) ||
-      item.body_systems?.toLowerCase().includes(query)
+      (record.generic_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (record.brand_names || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (record.drug_class || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (record.body_systems || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
-  const favoriteRecords = allRecords.filter(item => favorites.includes(item.id));
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header Title */}
         <div className="text-center space-y-2 pt-6">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
             PA Study Hub
           </h1>
           <p className="text-sm text-slate-500">
@@ -58,104 +58,111 @@ export default function MainPage() {
 
         {/* Global Search Bar */}
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="w-5 h-5 text-slate-400" />
-          </div>
-          <input
+          <Search className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
+          <input 
             type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search any disease, drug name, class, or system..."
-            className="w-full pl-11 pr-4 py-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
-        {/* Search Results Dropdown / Box */}
-        {searchTerm.trim() !== '' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-3 space-y-2 max-h-96 overflow-y-auto">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-1">
-              Search Results ({filteredRecords.length})
-            </p>
-            {filteredRecords.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-6">No matching records found.</p>
-            ) : (
-              filteredRecords.map(item => (
-                <Link
-                  key={item.id}
-                  href={`/view/${item.id}`}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100"
-                >
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900">{item.generic_name}</h4>
-                    <p className="text-xs text-slate-500">
-                      {item.section} &bull; {item.body_systems || 'General'}
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
-                    View
-                  </span>
-                </Link>
-              ))
-            )}
+        {/* Section Cards */}
+        {!searchQuery && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <Link 
+              href="/pharmacology" 
+              className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition space-y-3 group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition">Pharmacology Drugs</h2>
+                <p className="text-xs text-slate-500 mt-1">Browse all drug cards, mechanisms of action, side effects, and pregnancy safety ratings.</p>
+              </div>
+            </Link>
+
+            <Link 
+              href="/clinical" 
+              className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow-md transition space-y-3 group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <Stethoscope className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition">Clinical Medicine</h2>
+                <p className="text-xs text-slate-500 mt-1">Browse medical conditions, pathophysiology, etiology, diagnosis, and evidence-based treatments.</p>
+              </div>
+            </Link>
           </div>
         )}
 
-        {/* Main Navigation Hub Grid (Pharmacology & Clinical Medicine Only) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link
-            href="/pharmacology"
-            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition space-y-3 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-              <BookOpen className="w-5 h-5" />
+        {/* Live Search Results Feed */}
+        {searchQuery && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Search Results ({filteredRecords.length})
+              </h2>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition">
-              Pharmacology Drugs
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Browse all drug cards, mechanisms of action, side effects, and pregnancy safety ratings.
-            </p>
-          </Link>
 
-          <Link
-            href="/clinical"
-            className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition space-y-3 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition">
-              Clinical Medicine
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Browse medical conditions, pathophysiology, etiology, diagnosis, and evidence-based treatments.
-            </p>
-          </Link>
-        </div>
+            {loading ? (
+              <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 text-slate-400 text-sm">Searching database...</div>
+            ) : filteredRecords.length === 0 ? (
+              <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 text-slate-400 text-sm">No matching records found.</div>
+            ) : (
+              <div className="grid grid-cols-1 gap-2.5">
+                {filteredRecords.map((record) => {
+                  const isStarred = mounted && starredIds.includes(record.id);
+                  const isClinical = record.section === 'Clinical Medicine';
 
-        {/* Starred Favorites Section (Local Storage) */}
-        {favoriteRecords.length > 0 && (
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">Your Starred Favorites</h3>
-            </div>
-            <div className="space-y-2">
-              {favoriteRecords.map(item => (
-                <Link
-                  key={item.id}
-                  href={`/view/${item.id}`}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition border border-slate-200 text-sm font-semibold"
-                >
-                  <span>{item.generic_name}</span>
-                  <span className="text-xs text-slate-400 uppercase font-medium">{item.section}</span>
-                </Link>
-              ))}
-            </div>
+                  return (
+                    <Link
+                      key={record.id}
+                      href={`/view/${record.id}`}
+                      className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition flex items-center justify-between gap-4 group"
+                    >
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                            {record.section}
+                          </span>
+                          {record.drug_class && (
+                            <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                              {record.drug_class}
+                            </span>
+                          )}
+                          {isStarred && <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 inline" />}
+                        </div>
+                        <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition truncate">
+                          {record.generic_name}
+                        </h3>
+                        {record.brand_names && (
+                          <p className="text-xs text-slate-500 truncate">
+                            {isClinical ? 'Subtype: ' : 'Brands: '}{record.brand_names}
+                          </p>
+                        )}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition shrink-0" />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
       </div>
     </div>
+  );
+}
+
+export default function MainPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading portal...</div>}>
+      <MainDashboard />
+    </Suspense>
   );
 }

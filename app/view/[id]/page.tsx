@@ -66,6 +66,8 @@ function ViewMedicationContent({ id }: { id: string }) {
   const fromParam = searchParams.get('from');
   const systemParam = searchParams.get('system');
   const sectionParam = searchParams.get('section');
+  const searchParam = searchParams.get('search');
+  const termParam = searchParams.get('term');
 
   const [record, setRecord] = useState<any>(null);
   const [allDrugs, setAllDrugs] = useState<any[]>([]);
@@ -110,17 +112,16 @@ function ViewMedicationContent({ id }: { id: string }) {
       .single();
 
     if (!error) setRecord(data);
+    setLoading(false);
   };
 
   const fetchAllDrugs = async () => {
-    setLoading(true);
     const { data } = await supabase
       .from('drugs')
       .select('id, generic_name, drug_class, section')
       .eq('section', 'Pharmacology');
 
     if (data) setAllDrugs(data);
-    setLoading(false);
   };
 
   const handleDelete = async () => {
@@ -227,10 +228,25 @@ function ViewMedicationContent({ id }: { id: string }) {
   let backLink = isClinical ? '/clinical' : '/pharmacology';
   let backText = isClinical ? 'Back to Clinical' : 'Back to Pharmacology';
   
-  if (fromParam === 'systems') {
+  if (fromParam === 'clinical') {
+    const queryParams = new URLSearchParams();
+    if (searchParam) queryParams.set('search', searchParam);
+    if (termParam && termParam !== 'All') queryParams.set('term', termParam);
+    
+    backLink = queryParams.toString() ? `/clinical?${queryParams.toString()}` : '/clinical';
+    backText = 'Back to Clinical';
+  } else if (fromParam === 'pharmacology') {
+    const queryParams = new URLSearchParams();
+    if (searchParam) queryParams.set('search', searchParam);
+    if (termParam && termParam !== 'All') queryParams.set('term', termParam);
+    
+    backLink = queryParams.toString() ? `/pharmacology?${queryParams.toString()}` : '/pharmacology';
+    backText = 'Back to Pharmacology';
+  } else if (fromParam === 'systems') {
     const queryParams = new URLSearchParams();
     if (systemParam) queryParams.set('system', systemParam);
     if (sectionParam) queryParams.set('section', sectionParam);
+    if (searchParam) queryParams.set('search', searchParam);
     
     backLink = queryParams.toString() ? `/systems?${queryParams.toString()}` : '/systems';
     backText = systemParam ? `Back to ${systemParam}` : 'Back to Systems';
@@ -406,10 +422,12 @@ function ViewMedicationContent({ id }: { id: string }) {
   );
 }
 
-export default function ViewMedicationPage({ params }: { params: { id: string } }) {
+export default function ViewMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+
   return (
     <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading record details...</div>}>
-      <ViewMedicationContent id={params.id} />
+      <ViewMedicationContent id={resolvedParams.id} />
     </Suspense>
   );
 }

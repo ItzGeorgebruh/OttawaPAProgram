@@ -1,15 +1,22 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Plus, Search, ArrowLeft, Pill, ChevronRight, Filter, Layers } from 'lucide-react';
 
-export default function PharmacologyPage() {
+export const dynamic = 'force-dynamic';
+
+function PharmacologyDashboard() {
+  const searchParams = useSearchParams();
+
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTerm, setSelectedTerm] = useState('All');
+  
+  // Initialize state from URL query parameters if returning from a detail view
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [selectedTerm, setSelectedTerm] = useState(searchParams.get('term') || 'All');
 
   useEffect(() => {
     fetchDrugs();
@@ -194,10 +201,18 @@ export default function PharmacologyPage() {
             {filtered.map((item) => {
               const pregnancyDisplay = getPregnancyDisplay(item.pregnancy_safety);
 
+              // Build URL with search and term parameters preserved for the back button
+              const queryParams = new URLSearchParams();
+              queryParams.set('from', 'pharmacology');
+              if (searchQuery) queryParams.set('search', searchQuery);
+              if (selectedTerm !== 'All') queryParams.set('term', selectedTerm);
+
+              const detailUrl = `/view/${item.id}?${queryParams.toString()}`;
+
               return (
                 <Link 
                   key={item.id} 
-                  href={`/view/${item.id}`} 
+                  href={detailUrl} 
                   className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition flex flex-col justify-between group cursor-pointer"
                 >
                   <div className="space-y-2">
@@ -242,5 +257,13 @@ export default function PharmacologyPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PharmacologyPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading...</div>}>
+      <PharmacologyDashboard />
+    </Suspense>
   );
 }
