@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, use, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -59,9 +59,7 @@ const formatBodySystemDisplay = (text: string) => {
   return result.length > 0 ? result.join(', ') : 'General';
 };
 
-function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const id = resolvedParams?.id;
+function ViewMedicationContent({ id }: { id: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -152,8 +150,8 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     } catch (e) {}
 
     const items = text
-      .split(/;\s*|,\s*(?![^()]*\))|\.\s+/)
-      .map(item => item.trim().replace(/\.$/, ''))
+      .split(/;\s*/)
+      .map(item => item.trim())
       .filter(item => item.length > 0);
 
     if (items.length <= 1) {
@@ -244,7 +242,6 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-3xl mx-auto space-y-6">
         
-        {/* Top Header Navigation & Quick Action Tabs */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 flex-wrap">
             <Link href={backLink} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
@@ -308,7 +305,6 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
           )}
         </div>
 
-        {/* Display Image if Available */}
         {record.image_url && (
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -398,7 +394,6 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
           </div>
         )}
 
-        {/* Display Additional Notes Section if Available */}
         {record.notes && (
           <div className="bg-amber-50/60 p-6 rounded-2xl border border-amber-200/80 shadow-sm space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-amber-700">Additional Notes & Reminders</h3>
@@ -411,10 +406,10 @@ function ViewMedicationContent({ params }: { params: Promise<{ id: string }> }) 
   );
 }
 
-export default function ViewMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ViewMedicationPage({ params }: { params: { id: string } }) {
   return (
     <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading record details...</div>}>
-      <ViewMedicationContent params={params} />
+      <ViewMedicationContent id={params.id} />
     </Suspense>
   );
 }
