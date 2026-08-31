@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, use, Suspense } from 'react';
+import React, { useEffect, useState, use, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Sparkles, AlertCircle, Check } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Check, Image as ImageIcon } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,26 +16,24 @@ const AVAILABLE_SYSTEMS = [
   'Endocrine',
   'Integumentary',
   'Renal',
-  'Genitourinary',
-  'ENT',
   'Hematologic',
   'Immunologic',
   'Musculoskeletal',
   'Reproductive',
   'Dermatology',
+  'ENT',
   'Psychiatry',
   'Systemic',
   'Immune'
 ];
 
-function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) {
+function EditForm({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams?.id;
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
   const [form, setForm] = useState({
@@ -45,7 +43,7 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     generic_name: '',
     brand_names: '',
     drug_class: '',
-    body_systems: 'Cardiovascular',
+    body_systems: '',
     mechanism_of_action: '',
     indications: '',
     route: '',
@@ -58,10 +56,14 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     diagnostics_labs: '',
     treatment: '',
     complications: '',
+    image_url: '',
+    notes: '',
   });
 
   useEffect(() => {
-    if (id) fetchRecord();
+    if (id) {
+      fetchRecord();
+    }
   }, [id]);
 
   const fetchRecord = async () => {
@@ -73,7 +75,6 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
       .single();
 
     if (error) {
-      console.error('Error fetching record:', error);
       setErrorMsg('Failed to load record.');
     } else if (data) {
       setForm({
@@ -83,7 +84,7 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
         generic_name: data.generic_name || '',
         brand_names: data.brand_names || '',
         drug_class: data.drug_class || '',
-        body_systems: data.body_systems || 'Cardiovascular',
+        body_systems: data.body_systems || '',
         mechanism_of_action: data.mechanism_of_action || '',
         indications: data.indications || '',
         route: data.route || '',
@@ -96,6 +97,8 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
         diagnostics_labs: data.diagnostics_labs || '',
         treatment: data.treatment || '',
         complications: data.complications || '',
+        image_url: data.image_url || '',
+        notes: data.notes || '',
       });
     }
     setLoading(false);
@@ -105,7 +108,6 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Toggle multiple body systems cleanly
   const toggleSystem = (sys: string) => {
     const currentSystems = form.body_systems
       ? form.body_systems.split(',').map(s => s.trim()).filter(Boolean)
@@ -124,50 +126,6 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
     });
   };
 
-  const handleAIFill = async () => {
-    if (!form.generic_name) {
-      alert('Please enter a name before running AI Auto-Fill.');
-      return;
-    }
-
-    setGenerating(true);
-    setErrorMsg('');
-
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: form.generic_name, type: form.section }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to generate AI data.');
-
-      setForm((prev) => ({
-        ...prev,
-        brand_names: data.brand_names || prev.brand_names,
-        drug_class: data.drug_class || prev.drug_class,
-        body_systems: data.body_systems || prev.body_systems,
-        mechanism_of_action: data.mechanism_of_action || data.mechanism || prev.mechanism_of_action,
-        indications: data.indications || prev.indications,
-        route: data.route || prev.route,
-        side_effects: data.side_effects || prev.side_effects,
-        contraindications: data.contraindications || prev.contraindications,
-        clinical_pearls: data.clinical_pearls || prev.clinical_pearls,
-        pathophysiology: data.pathophysiology || prev.pathophysiology,
-        cause: data.cause || prev.cause,
-        symptoms: data.symptoms || prev.symptoms,
-        diagnostics_labs: data.diagnostics_labs || prev.diagnostics_labs,
-        treatment: data.treatment || prev.treatment,
-        complications: data.complications || prev.complications,
-      }));
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error generating content with AI.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -183,18 +141,16 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
       setErrorMsg(error.message);
       setSaving(false);
     } else {
-      // Redirect straight back to the detail view page for this entry
       router.push(`/view/${id}`);
       router.refresh();
     }
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading editor...</div>;
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading record for editing...</div>;
   }
 
   const isClinical = form.section === 'Clinical Medicine';
-  const cancelLink = `/view/${id}`;
   const selectedSystemsList = form.body_systems ? form.body_systems.split(',').map(s => s.trim()) : [];
 
   return (
@@ -203,10 +159,10 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
         
         <div className="flex items-center justify-between">
           <Link
-            href={cancelLink}
+            href={`/view/${id}`}
             className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition"
           >
-            <ArrowLeft className="w-4 h-4" /> Cancel & Return to Details
+            <ArrowLeft className="w-4 h-4" /> Cancel
           </Link>
         </div>
 
@@ -218,21 +174,9 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
         )}
 
         <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Edit Entry</h1>
-              <p className="text-sm text-slate-500 mt-0.5">Update details for {form.generic_name}</p>
-            </div>
-            
-            <button
-              type="button"
-              onClick={handleAIFill}
-              disabled={generating}
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-sm disabled:opacity-50 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              {generating ? 'AI Generating...' : 'AI Auto-Fill'}
-            </button>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Edit Record</h1>
+            <p className="text-sm text-slate-500 mt-0.5">Update information for {form.generic_name || 'this entry'}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -356,6 +300,21 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             />
           </div>
 
+          {/* IMAGE URL INPUT */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-slate-400" /> Reference Image / Diagram URL
+            </label>
+            <input
+              type="text"
+              name="image_url"
+              value={form.image_url}
+              onChange={handleChange}
+              placeholder="https://example.com/image.jpg"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           {!isClinical && (
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Pregnancy Safety</label>
@@ -441,6 +400,19 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
             </div>
           )}
 
+          {/* ADDITIONAL NOTES TEXTAREA */}
+          <div className="pt-4 border-t border-slate-100">
+            <label className="block text-xs font-bold uppercase tracking-wider text-amber-700 mb-1">Additional Notes & Personal Pearls</label>
+            <textarea
+              name="notes"
+              rows={3}
+              value={form.notes}
+              onChange={handleChange}
+              placeholder="Add any extra notes, high-yield reminders, or mnemonics here..."
+              className="w-full px-3.5 py-2.5 rounded-xl border border-amber-200 bg-amber-50/40 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+          </div>
+
           <div className="flex justify-end pt-4 border-t border-slate-100">
             <button
               type="submit"
@@ -456,10 +428,10 @@ function EditMedicationContent({ params }: { params: Promise<{ id: string }> }) 
   );
 }
 
-export default function EditMedicationPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading editor...</div>}>
-      <EditMedicationContent params={params} />
+      <EditForm params={params} />
     </Suspense>
   );
 }
