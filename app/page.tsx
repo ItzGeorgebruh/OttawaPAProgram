@@ -46,8 +46,24 @@ function MainDashboard() {
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-4xl mx-auto space-y-8">
         
+        {/* Top Navigation Bar with Starred Favorites Button */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div></div> {/* Spacer */}
+          <Link
+            href="/favorites"
+            className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm"
+          >
+            <Star className="w-4 h-4 fill-amber-500 text-amber-500" /> Starred Favorites
+            {mounted && starredIds.length > 0 && (
+              <span className="bg-amber-200 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {starredIds.length}
+              </span>
+            )}
+          </Link>
+        </div>
+
         {/* Header Title */}
-        <div className="text-center space-y-2 pt-6">
+        <div className="text-center space-y-2 pt-2">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
             PA Study Hub
           </h1>

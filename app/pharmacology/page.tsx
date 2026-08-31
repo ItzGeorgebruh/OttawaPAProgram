@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/app/supabase';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Plus, Search, ArrowLeft, Pill, ChevronRight, Filter, Layers } from 'lucide-react';
+import { Plus, Search, ArrowLeft, Pill, ChevronRight, Filter, Layers, Star } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,11 +139,14 @@ function PharmacologyDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition">
             <ArrowLeft className="w-4 h-4" /> Back to Main
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link href="/favorites" className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition shadow-sm">
+              <Star className="w-4 h-4 fill-amber-500 text-amber-500" /> Starred
+            </Link>
             <Link href="/systems" className="inline-flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition">
               <Layers className="w-4 h-4 text-blue-600" /> View by Body Systems
             </Link>
